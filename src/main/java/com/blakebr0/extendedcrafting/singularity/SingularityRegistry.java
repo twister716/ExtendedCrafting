@@ -1,6 +1,7 @@
 package com.blakebr0.extendedcrafting.singularity;
 
 import com.blakebr0.extendedcrafting.ExtendedCrafting;
+import com.blakebr0.extendedcrafting.crafting.recipe.UltimateSingularityRecipe;
 import com.blakebr0.extendedcrafting.lib.ModSingularities;
 import com.blakebr0.extendedcrafting.network.NetworkHandler;
 import com.blakebr0.extendedcrafting.network.message.SyncSingularitiesMessage;
@@ -127,6 +128,8 @@ public final class SingularityRegistry {
 
         this.singularities.clear();
         this.singularities.putAll(singularities);
+
+        UltimateSingularityRecipe.invalidate();
 
         ExtendedCrafting.LOGGER.info("Loaded {} singularities from the server", singularities.size());
     }

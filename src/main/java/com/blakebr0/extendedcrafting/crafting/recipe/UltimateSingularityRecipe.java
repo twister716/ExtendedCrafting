@@ -14,7 +14,7 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraftforge.items.IItemHandler;
 
 public class UltimateSingularityRecipe extends ShapelessTableRecipe {
-    private boolean ingredientsLoaded = false;
+    private static boolean ingredientsLoaded = false;
 
     public UltimateSingularityRecipe(ResourceLocation recipeId, ItemStack output) {
         super(recipeId, NonNullList.create(), output, 4);
@@ -22,7 +22,9 @@ public class UltimateSingularityRecipe extends ShapelessTableRecipe {
 
     @Override
     public NonNullList<Ingredient> getIngredients() {
-        if (!this.ingredientsLoaded) {
+        if (!ingredientsLoaded) {
+            super.getIngredients().clear();
+
             SingularityRegistry.getInstance().getSingularities()
                     .stream()
                     .filter(singularity -> singularity.isInUltimateSingularity() && singularity.getIngredient() != Ingredient.EMPTY)
@@ -31,7 +33,7 @@ public class UltimateSingularityRecipe extends ShapelessTableRecipe {
                     .map(Ingredient::of)
                     .forEach(super.getIngredients()::add);
 
-            this.ingredientsLoaded = true;
+            ingredientsLoaded = true;
         }
 
         return super.getIngredients();
@@ -49,6 +51,10 @@ public class UltimateSingularityRecipe extends ShapelessTableRecipe {
     @Override
     public RecipeSerializer<?> getSerializer() {
         return ModRecipeSerializers.ULTIMATE_SINGULARITY.get();
+    }
+
+    public static void invalidate() {
+        ingredientsLoaded = false;
     }
 
     public static class Serializer implements RecipeSerializer<UltimateSingularityRecipe> {
