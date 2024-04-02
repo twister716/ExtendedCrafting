@@ -200,7 +200,7 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
         if (recipe != null) {
             result = recipe.assemble(inventory, level.registryAccess());
         } else {
-            var craftingInventory = new ExtendedCraftingInventory(EmptyContainer.INSTANCE, getBaseItemStackHandlerForRecipeInventory(inventory), 3);
+            var craftingInventory = new ExtendedCraftingInventory(EmptyContainer.INSTANCE, this.getInventory(), 3, true);
             var vanilla = level.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, craftingInventory, level).orElse(null);
 
             if (vanilla != null) {
@@ -228,12 +228,12 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
         var inventory = this.getRecipeInventory();
 
         if (this.isGridChanged && (this.recipe == null || !this.recipe.matches(inventory, this.level))) {
-            var recipe = level.getRecipeManager().getRecipeFor(ModRecipeTypes.TABLE.get(), inventory, this.level).orElse(null);
+            var recipe = this.level.getRecipeManager().getRecipeFor(ModRecipeTypes.TABLE.get(), inventory, this.level).orElse(null);
 
             this.recipe = recipe != null ? new WrappedRecipe(recipe) : null;
 
             if (this.recipe == null && ModConfigs.TABLE_USE_VANILLA_RECIPES.get() && this instanceof Basic) {
-                var craftingInventory = new ExtendedCraftingInventory(EmptyContainer.INSTANCE, getBaseItemStackHandlerForRecipeInventory(inventory), 3);
+                var craftingInventory = new ExtendedCraftingInventory(EmptyContainer.INSTANCE, this.getInventory(), 3, true);
                 var vanilla = this.level.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, craftingInventory, this.level).orElse(null);
 
                 this.recipe = vanilla != null ? new WrappedRecipe(vanilla, craftingInventory) : null;
@@ -335,16 +335,6 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
 
 		return false;
 	}
-
-    private BaseItemStackHandler getBaseItemStackHandlerForRecipeInventory(RecipeInventory inventory) {
-        var handler = BaseItemStackHandler.create(inventory.getContainerSize());
-
-        for (int i = 0; i < inventory.getContainerSize(); i++) {
-            handler.setStackInSlot(i, inventory.getItem(i));
-        }
-
-        return handler;
-    }
 
     public static class WrappedRecipe {
         private final BiFunction<Container, RegistryAccess, ItemStack> resultFunc;
