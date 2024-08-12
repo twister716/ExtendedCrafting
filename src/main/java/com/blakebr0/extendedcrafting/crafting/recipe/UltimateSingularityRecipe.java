@@ -4,20 +4,31 @@ import com.blakebr0.extendedcrafting.init.ModItems;
 import com.blakebr0.extendedcrafting.init.ModRecipeSerializers;
 import com.blakebr0.extendedcrafting.singularity.SingularityRegistry;
 import com.blakebr0.extendedcrafting.singularity.SingularityUtils;
-import com.google.gson.JsonObject;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.NonNullList;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraftforge.items.IItemHandler;
+import net.minecraft.world.level.Level;
 
 public class UltimateSingularityRecipe extends ShapelessTableRecipe {
     private static boolean ingredientsLoaded = false;
 
-    public UltimateSingularityRecipe(ResourceLocation recipeId, ItemStack output) {
-        super(recipeId, NonNullList.create(), output, 4);
+    public UltimateSingularityRecipe(ItemStack output) {
+        super(NonNullList.create(), output, 4);
+    }
+
+    @Override
+    public boolean matches(CraftingInput inventory, Level level) {
+        // ensure ingredients list is initialized
+        var ingredients = this.getIngredients();
+
+        // in the case there are no ingredients, the recipe should never match
+        return !ingredients.isEmpty() && super.matches(inventory, level);
     }
 
     @Override
@@ -40,15 +51,6 @@ public class UltimateSingularityRecipe extends ShapelessTableRecipe {
     }
 
     @Override
-    public boolean matches(IItemHandler inventory) {
-        // ensure ingredients list is initialized
-        var ingredients = this.getIngredients();
-
-        // in the case there are no ingredients, the recipe should never match
-        return !ingredients.isEmpty() && super.matches(inventory);
-    }
-
-    @Override
     public RecipeSerializer<?> getSerializer() {
         return ModRecipeSerializers.ULTIMATE_SINGULARITY.get();
     }
@@ -58,17 +60,25 @@ public class UltimateSingularityRecipe extends ShapelessTableRecipe {
     }
 
     public static class Serializer implements RecipeSerializer<UltimateSingularityRecipe> {
+        public static final MapCodec<UltimateSingularityRecipe> CODEC = MapCodec.unit(() -> new UltimateSingularityRecipe(new ItemStack(ModItems.ULTIMATE_SINGULARITY.get())));
+        public static final StreamCodec<RegistryFriendlyByteBuf, UltimateSingularityRecipe> STREAM_CODEC = StreamCodec.of(
+                UltimateSingularityRecipe.Serializer::toNetwork, UltimateSingularityRecipe.Serializer::fromNetwork
+        );
+
         @Override
-        public UltimateSingularityRecipe fromJson(ResourceLocation recipeId, JsonObject json) {
-            return new UltimateSingularityRecipe(recipeId, new ItemStack(ModItems.ULTIMATE_SINGULARITY.get()));
+        public MapCodec<UltimateSingularityRecipe> codec() {
+            return CODEC;
         }
 
         @Override
-        public UltimateSingularityRecipe fromNetwork(ResourceLocation recipeId, FriendlyByteBuf buffer) {
-            return new UltimateSingularityRecipe(recipeId, new ItemStack(ModItems.ULTIMATE_SINGULARITY.get()));
+        public StreamCodec<RegistryFriendlyByteBuf, UltimateSingularityRecipe> streamCodec() {
+            return STREAM_CODEC;
         }
 
-        @Override
-        public void toNetwork(FriendlyByteBuf buffer, UltimateSingularityRecipe recipe) { }
+        public static UltimateSingularityRecipe fromNetwork(RegistryFriendlyByteBuf buffer) {
+            return new UltimateSingularityRecipe(new ItemStack(ModItems.ULTIMATE_SINGULARITY.get()));
+        }
+
+        private static void toNetwork(RegistryFriendlyByteBuf buffer, UltimateSingularityRecipe recipe) { }
     }
 }

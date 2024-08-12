@@ -30,19 +30,19 @@ import snownee.jade.api.config.IPluginConfig;
 
 @WailaPlugin
 public class JadeCompat implements IWailaPlugin {
-	private static final ResourceLocation CRAFTING_CORE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "crafting_core");
-	private static final ResourceLocation BASIC_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "basic_table");
-	private static final ResourceLocation ADVANCED_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "advanced_table");
-	private static final ResourceLocation ELITE_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "elite_table");
-	private static final ResourceLocation ULTIMATE_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "ultimate_table");
-	private static final ResourceLocation BASIC_AUTO_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "basic_auto_table");
-	private static final ResourceLocation ADVANCED_AUTO_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "advanced_auto_table");
-	private static final ResourceLocation ELITE_AUTO_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "elite_auto_table");
-	private static final ResourceLocation ULTIMATE_AUTO_TABLE_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "ultimate_auto_table");
-	private static final ResourceLocation ENDER_CRAFTER_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "ender_crafter");
-	private static final ResourceLocation AUTO_ENDER_CRAFTER_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "auto_ender_crafter");
-	private static final ResourceLocation FLUX_CRAFTER_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "flux_crafter");
-	private static final ResourceLocation COMPRESSOR_PROVIDER = new ResourceLocation(ExtendedCrafting.MOD_ID, "compressor");
+	private static final ResourceLocation CRAFTING_CORE_PROVIDER = ExtendedCrafting.resource("crafting_core");
+	private static final ResourceLocation BASIC_TABLE_PROVIDER = ExtendedCrafting.resource("basic_table");
+	private static final ResourceLocation ADVANCED_TABLE_PROVIDER = ExtendedCrafting.resource("advanced_table");
+	private static final ResourceLocation ELITE_TABLE_PROVIDER = ExtendedCrafting.resource("elite_table");
+	private static final ResourceLocation ULTIMATE_TABLE_PROVIDER = ExtendedCrafting.resource("ultimate_table");
+	private static final ResourceLocation BASIC_AUTO_TABLE_PROVIDER = ExtendedCrafting.resource("basic_auto_table");
+	private static final ResourceLocation ADVANCED_AUTO_TABLE_PROVIDER = ExtendedCrafting.resource("advanced_auto_table");
+	private static final ResourceLocation ELITE_AUTO_TABLE_PROVIDER = ExtendedCrafting.resource("elite_auto_table");
+	private static final ResourceLocation ULTIMATE_AUTO_TABLE_PROVIDER = ExtendedCrafting.resource("ultimate_auto_table");
+	private static final ResourceLocation ENDER_CRAFTER_PROVIDER = ExtendedCrafting.resource("ender_crafter");
+	private static final ResourceLocation AUTO_ENDER_CRAFTER_PROVIDER = ExtendedCrafting.resource("auto_ender_crafter");
+	private static final ResourceLocation FLUX_CRAFTER_PROVIDER = ExtendedCrafting.resource("flux_crafter");
+	private static final ResourceLocation COMPRESSOR_PROVIDER = ExtendedCrafting.resource("compressor");
 
 
 	@Override

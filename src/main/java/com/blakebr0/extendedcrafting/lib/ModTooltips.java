@@ -2,7 +2,7 @@ package com.blakebr0.extendedcrafting.lib;
 
 import com.blakebr0.cucumber.util.Tooltip;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.fml.ModList;
+import net.neoforged.fml.ModList;
 
 public final class ModTooltips {
     public static final Tooltip EMPTY = new Tooltip("tooltip.extendedcrafting.empty");

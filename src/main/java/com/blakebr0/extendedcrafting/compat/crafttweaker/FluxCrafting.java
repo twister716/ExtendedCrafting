@@ -16,10 +16,13 @@ import com.blamejared.crafttweaker.api.recipe.manager.base.IRecipeManager;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.ShapedRecipePattern;
 import org.openzen.zencode.java.ZenCodeType;
 
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @ZenCodeType.Name("mods.extendedcrafting.FluxCrafting")
@@ -59,9 +62,10 @@ public final class FluxCrafting implements IRecipeManager<IFluxCrafterRecipe> {
             }
         }
 
-        var recipe = new ShapedFluxCrafterRecipe(id, width, height, ingredients, output.getInternal(), powerRequired, powerRate);
+        var pattern = new ShapedRecipePattern(width, height, ingredients, Optional.empty());
+        var recipe = new ShapedFluxCrafterRecipe(pattern, output.getInternal(), powerRequired, powerRate);
 
-        CraftTweakerAPI.apply(new ActionAddRecipe<>(INSTANCE, recipe));
+        CraftTweakerAPI.apply(new ActionAddRecipe<>(INSTANCE, new RecipeHolder<>(id, recipe)));
     }
 
     @ZenCodeType.Method
@@ -72,14 +76,14 @@ public final class FluxCrafting implements IRecipeManager<IFluxCrafterRecipe> {
     @ZenCodeType.Method
     public static void addShapeless(String name, IItemStack output, IIngredient[] inputs, int powerRequired, int powerRate) {
         var id = CraftTweakerConstants.rl(INSTANCE.fixRecipeName(name));
-        var recipe = new ShapelessFluxCrafterRecipe(id, toIngredientsList(inputs), output.getInternal(), powerRequired, powerRate);
+        var recipe = new ShapelessFluxCrafterRecipe(toIngredientsList(inputs), output.getInternal(), powerRequired, powerRate);
 
-        CraftTweakerAPI.apply(new ActionAddRecipe<>(INSTANCE, recipe));
+        CraftTweakerAPI.apply(new ActionAddRecipe<>(INSTANCE, new RecipeHolder<>(id, recipe)));
     }
 
     @ZenCodeType.Method
     public static void remove(IItemStack stack) {
-        CraftTweakerAPI.apply(new ActionRemoveRecipe<>(INSTANCE, recipe -> recipe.getResultItem(RegistryAccess.EMPTY).is(stack.getInternal().getItem())));
+        CraftTweakerAPI.apply(new ActionRemoveRecipe<>(INSTANCE, recipe -> recipe.value().getResultItem(RegistryAccess.EMPTY).is(stack.getInternal().getItem())));
     }
 
     private static NonNullList<Ingredient> toIngredientsList(IIngredient... ingredients) {

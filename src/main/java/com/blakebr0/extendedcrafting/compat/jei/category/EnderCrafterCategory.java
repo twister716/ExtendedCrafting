@@ -9,6 +9,7 @@ import com.blakebr0.extendedcrafting.init.ModBlocks;
 import com.blakebr0.extendedcrafting.lib.ModTooltips;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
+import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.drawable.IDrawableAnimated;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
@@ -24,10 +25,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.List;
-
 public class EnderCrafterCategory implements IRecipeCategory<IEnderCrafterRecipe> {
-	private static final ResourceLocation TEXTURE = new ResourceLocation(ExtendedCrafting.MOD_ID, "textures/jei/ender_crafting.png");
+	private static final ResourceLocation TEXTURE = ExtendedCrafting.resource("textures/jei/ender_crafting.png");
 	public static final RecipeType<IEnderCrafterRecipe> RECIPE_TYPE = RecipeType.create(ExtendedCrafting.MOD_ID, "ender_crafting", IEnderCrafterRecipe.class);
 
 	private final IDrawable background;
@@ -69,12 +68,10 @@ public class EnderCrafterCategory implements IRecipeCategory<IEnderCrafterRecipe
 	}
 
 	@Override
-	public List<Component> getTooltipStrings(IEnderCrafterRecipe recipe, IRecipeSlotsView slots, double mouseX, double mouseY) {
+	public void getTooltip(ITooltipBuilder tooltip, IEnderCrafterRecipe recipe, IRecipeSlotsView slots, double mouseX, double mouseY) {
 		if (mouseX > 60 && mouseX < 83 && mouseY > 19 && mouseY < 34) {
-			return List.of(ModTooltips.SECONDS.args(recipe.getCraftingTime()).color(ChatFormatting.WHITE).build());
+			tooltip.add(ModTooltips.SECONDS.args(recipe.getCraftingTime()).color(ChatFormatting.WHITE).build());
 		}
-
-		return List.of();
 	}
 
 	@Override

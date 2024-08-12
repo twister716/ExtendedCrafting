@@ -8,14 +8,13 @@ import com.blakebr0.cucumber.util.Localizable;
 import com.blakebr0.extendedcrafting.api.crafting.IFluxCrafterRecipe;
 import com.blakebr0.extendedcrafting.block.FluxAlternatorBlock;
 import com.blakebr0.extendedcrafting.container.FluxCrafterContainer;
-import com.blakebr0.extendedcrafting.container.inventory.ExtendedCraftingInventory;
 import com.blakebr0.extendedcrafting.crafting.TableRecipeStorage;
 import com.blakebr0.extendedcrafting.init.ModRecipeTypes;
 import com.blakebr0.extendedcrafting.init.ModTileEntities;
 import com.blakebr0.extendedcrafting.util.AlternatorParticleOffsets;
-import com.blakebr0.extendedcrafting.util.EmptyContainer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -24,8 +23,8 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -35,7 +34,7 @@ import java.util.List;
 
 public class FluxCrafterTileEntity extends BaseInventoryTileEntity implements MenuProvider {
 	private final BaseItemStackHandler inventory;
-	private final CachedRecipe<IFluxCrafterRecipe> recipe;
+	private final CachedRecipe<CraftingInput, IFluxCrafterRecipe> recipe;
 	private int progress;
 	private int progressReq;
 	protected boolean isGridChanged = true;
@@ -56,15 +55,15 @@ public class FluxCrafterTileEntity extends BaseInventoryTileEntity implements Me
 	}
 
 	@Override
-	public void load(CompoundTag tag) {
-		super.load(tag);
+	public void loadAdditional(CompoundTag tag, HolderLookup.Provider lookup) {
+		super.loadAdditional(tag, lookup);
 		this.progress = tag.getInt("Progress");
 		this.progressReq = tag.getInt("ProgressReq");
 	}
 
 	@Override
-	public void saveAdditional(CompoundTag tag) {
-		super.saveAdditional(tag);
+	public void saveAdditional(CompoundTag tag, HolderLookup.Provider lookup) {
+		super.saveAdditional(tag, lookup);
 		tag.putInt("Progress", this.progress);
 		tag.putInt("ProgressReq", this.progressReq);
 	}
@@ -84,7 +83,7 @@ public class FluxCrafterTileEntity extends BaseInventoryTileEntity implements Me
 		var selectedRecipe = tile.getSelectedRecipeGrid();
 
 		if (recipe != null && (selectedRecipe == null || recipe.matches(selectedRecipe, level))) {
-			var result = recipe.assemble(tile.inventory.toRecipeInventory(0, 9), level.registryAccess());
+			var result = recipe.assemble(tile.inventory.toCraftingInput(3, 3, 0, 9), level.registryAccess());
 			var output = tile.inventory.getStackInSlot(9);
 
 			if (StackHelper.canCombineStacks(result, output)) {
@@ -148,12 +147,12 @@ public class FluxCrafterTileEntity extends BaseInventoryTileEntity implements Me
 		return null;
 	}
 
-	private CraftingContainer getSelectedRecipeGrid() {
+	private CraftingInput getSelectedRecipeGrid() {
 		var storage = this.getRecipeStorage();
 		if (storage != null) {
 			var grid = storage.getSelectedRecipeGrid();
 			if (grid != null) {
-				return new ExtendedCraftingInventory(EmptyContainer.INSTANCE, storage.getSelectedRecipeGrid(), 3);
+				return grid.toCraftingInput(3, 3);
 			}
 		}
 
@@ -232,6 +231,6 @@ public class FluxCrafterTileEntity extends BaseInventoryTileEntity implements Me
 			return this.recipe.get();
 		}
 
-		return this.recipe.checkAndGet(this.inventory.toRecipeInventory(0, 9), this.level);
+		return this.recipe.checkAndGet(this.inventory.toCraftingInput(3, 3, 0, 9), this.level);
 	}
 }

@@ -12,34 +12,34 @@ import com.blakebr0.extendedcrafting.container.CraftingCoreContainer;
 import com.blakebr0.extendedcrafting.init.ModRecipeTypes;
 import com.blakebr0.extendedcrafting.init.ModTileEntities;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.FastColor;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.energy.IEnergyStorage;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class CraftingCoreTileEntity extends BaseInventoryTileEntity implements MenuProvider {
-	private final LazyOptional<IEnergyStorage> energyCapability = LazyOptional.of(this::getEnergy);
 	private final BaseItemStackHandler inventory;
 	private final BaseItemStackHandler recipeInventory;
 	private final BaseEnergyStorage energy;
-	private final CachedRecipe<ICombinationRecipe> recipe;
+	private final CachedRecipe<CraftingInput, ICombinationRecipe> recipe;
 	private int progress;
 	private int pedestalCount;
 	private boolean haveItemsChanged = true;
@@ -58,26 +58,17 @@ public class CraftingCoreTileEntity extends BaseInventoryTileEntity implements M
 	}
 
 	@Override
-	public void load(CompoundTag tag) {
-		super.load(tag);
+	public void loadAdditional(CompoundTag tag, HolderLookup.Provider lookup) {
+		super.loadAdditional(tag, lookup);
 		this.progress = tag.getInt("Progress");
-		this.energy.deserializeNBT(tag.get("Energy"));
+		this.energy.deserializeNBT(lookup, tag.get("Energy"));
 	}
 
 	@Override
-	public void saveAdditional(CompoundTag tag) {
-		super.saveAdditional(tag);
+	public void saveAdditional(CompoundTag tag, HolderLookup.Provider lookup) {
+		super.saveAdditional(tag, lookup);
 		tag.putInt("Progress", this.progress);
 		tag.putInt("Energy", this.energy.getEnergyStored());
-	}
-
-	@Override
-	public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
-		if (!this.isRemoved() && cap == ForgeCapabilities.ENERGY) {
-			return ForgeCapabilities.ENERGY.orEmpty(cap, this.energyCapability);
-		}
-
-		return super.getCapability(cap, side);
 	}
 
 	@Override
@@ -112,11 +103,11 @@ public class CraftingCoreTileEntity extends BaseInventoryTileEntity implements M
 					}
 
 					tile.spawnParticles(ParticleTypes.END_ROD, pos, 1.1, 50);
-					tile.inventory.setStackInSlot(0, recipe.assemble(tile.recipeInventory.asRecipeWrapper(), level.registryAccess()));
+					tile.inventory.setStackInSlot(0, recipe.assemble(tile.recipeInventory.toCraftingInput(7, 7), level.registryAccess()));
 					tile.progress = 0;
 					tile.setChangedFast();
 				} else {
-					tile.spawnParticles(ParticleTypes.ENTITY_EFFECT, pos, 1.15, 2);
+					tile.spawnParticles(ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, FastColor.ARGB32.color(255, 0, 0)), pos, 1.15, 2);
 
 					if (tile.shouldSpawnItemParticles()) {
 						for (var pedestalPos : pedestalsWithItems.keySet()) {

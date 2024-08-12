@@ -1,11 +1,12 @@
 package com.blakebr0.extendedcrafting.item;
 
-import com.blakebr0.cucumber.helper.NBTHelper;
 import com.blakebr0.cucumber.item.BaseItem;
 import com.blakebr0.cucumber.tileentity.BaseInventoryTileEntity;
 import com.blakebr0.cucumber.util.Localizable;
+import com.blakebr0.extendedcrafting.api.component.RecipeMakerComponent;
 import com.blakebr0.extendedcrafting.compat.crafttweaker.CraftTweakerUtils;
 import com.blakebr0.extendedcrafting.config.ModConfigs;
+import com.blakebr0.extendedcrafting.init.ModDataComponentTypes;
 import com.blakebr0.extendedcrafting.lib.ModTooltips;
 import com.blakebr0.extendedcrafting.tileentity.AdvancedTableTileEntity;
 import com.blakebr0.extendedcrafting.tileentity.AutoTableTileEntity;
@@ -19,7 +20,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -27,16 +31,14 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.crafting.StrictNBTIngredient;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.fml.ModList;
+import net.neoforged.neoforge.common.crafting.DataComponentIngredient;
+import net.neoforged.neoforge.items.IItemHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,7 +53,7 @@ public class RecipeMakerItem extends BaseItem {
 	private static final char[] KEYS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-_*/".toCharArray();
 
 	public RecipeMakerItem() {
-		super(p -> p.stacksTo(1));
+		super(p -> p.stacksTo(1).component(ModDataComponentTypes.RECIPE_MAKER, RecipeMakerComponent.datapack()));
 	}
 
 	@Override
@@ -68,7 +70,7 @@ public class RecipeMakerItem extends BaseItem {
 
 		if (isTable(tile)) {
 			if (level.isClientSide()) {
-				var type = NBTHelper.getString(stack, "Type");
+				var type = getType(stack);
 				var inventory = ((BaseInventoryTileEntity) tile).getInventory();
 				var block = tile instanceof EnderCrafterTileEntity
 						? "EnderCrafting"
@@ -106,7 +108,7 @@ public class RecipeMakerItem extends BaseItem {
 			return InteractionResult.SUCCESS;
 		} else if (tile instanceof CraftingCoreTileEntity core) {
 			if (level.isClientSide()) {
-				var type = NBTHelper.getString(stack, "Type");
+				var type = getType(stack);
 				var string = "CraftTweaker".equals(type)
 						? makeCraftTweakerCombinationRecipe(core)
 						: makeDatapackCombinationRecipe(core);
@@ -126,8 +128,9 @@ public class RecipeMakerItem extends BaseItem {
 	public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
 		if (player.isCrouching()) {
 			var stack = player.getItemInHand(hand);
+			var component = stack.getOrDefault(ModDataComponentTypes.RECIPE_MAKER, RecipeMakerComponent.EMPTY);
 
-			NBTHelper.flipBoolean(stack, "Shapeless");
+			stack.set(ModDataComponentTypes.RECIPE_MAKER, component.flipShapeless());
 
 			if (level.isClientSide()) {
 				player.sendSystemMessage(Localizable.of("message.extendedcrafting.changed_mode").args(getModeString(stack)).build());
@@ -137,10 +140,9 @@ public class RecipeMakerItem extends BaseItem {
 		return super.use(level, player, hand);
 	}
 
-	@OnlyIn(Dist.CLIENT)
 	@Override
-	public void appendHoverText(ItemStack stack, Level level, List<Component> tooltip, TooltipFlag flag) {
-		tooltip.add(ModTooltips.TYPE.args(NBTHelper.getString(stack, "Type")).build());
+	public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+		tooltip.add(ModTooltips.TYPE.args(getType(stack)).build());
 		tooltip.add(ModTooltips.MODE.args(getModeString(stack)).build());
 	}
 
@@ -177,15 +179,15 @@ public class RecipeMakerItem extends BaseItem {
 			}
 
 			if (item.isEmpty()) {
-				var id = ForgeRegistries.ITEMS.getKey(stack.getItem());
-				item = id == null ? "item:minecraft:air" : "item:" + id;
+				var id = BuiltInRegistries.ITEM.getKey(stack.getItem());
+				item = "item:" + id;
 			}
 
 			string.append("<").append(item).append(">");
 
-			if (ModConfigs.RECIPE_MAKER_USE_NBT.get() && !stack.isEmpty() && stack.hasTag() && !item.startsWith("tag") && ModList.get().isLoaded("crafttweaker")) {
-				var nbt = stack.getTag();
-				var tag = CraftTweakerUtils.writeTag(nbt);
+			if (ModConfigs.RECIPE_MAKER_USE_NBT.get() && !stack.isEmpty() && stack.has(DataComponents.CUSTOM_DATA) && !item.startsWith("tag") && ModList.get().isLoaded("crafttweaker")) {
+				var nbt = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+				var tag = CraftTweakerUtils.writeTag(nbt.copyTag());
 
 				string.append(".withTag(").append(tag).append(")");
 			}
@@ -245,15 +247,15 @@ public class RecipeMakerItem extends BaseItem {
 			if (ModConfigs.RECIPE_MAKER_USE_TAGS.get() && tagId != null) {
 				item = "tag:items:" + tagId;
 			} else {
-				var id = ForgeRegistries.ITEMS.getKey(stack.getItem());
-				item = id == null ? "item:minecraft:air" : "item:" + id;
+				var id = BuiltInRegistries.ITEM.getKey(stack.getItem());
+				item = "item:" + id;
 			}
 
 			string.append("<").append(item).append(">");
 
-			if (ModConfigs.RECIPE_MAKER_USE_NBT.get() && !stack.isEmpty() && stack.hasTag() && !item.startsWith("tag") && ModList.get().isLoaded("crafttweaker")) {
-				var nbt = stack.getTag();
-				var tag = CraftTweakerUtils.writeTag(nbt);
+			if (ModConfigs.RECIPE_MAKER_USE_NBT.get() && !stack.isEmpty() && stack.has(DataComponents.CUSTOM_DATA) && !item.startsWith("tag") && ModList.get().isLoaded("crafttweaker")) {
+				var nbt = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+				var tag = CraftTweakerUtils.writeTag(nbt.copyTag());
 
 				string.append(".withTag(").append(tag).append(")");
 			}
@@ -283,11 +285,8 @@ public class RecipeMakerItem extends BaseItem {
 
 		string.append("mods.extendedcrafting.CombinationCrafting.addRecipe(\"").append(uuid).append("\", <>, 100000, [").append(NEW_LINE);
 
-		var inputId = ForgeRegistries.ITEMS.getKey(tile.getInventory().getStackInSlot(0).getItem());
-		var input = "item:minecraft:air";
-
-		if (inputId != null)
-			input = "item:" + inputId;
+		var inputId = BuiltInRegistries.ITEM.getKey(tile.getInventory().getStackInSlot(0).getItem());
+		var input = "item:" + inputId;
 
 		string.append("<").append(input).append(">, ");
 
@@ -301,13 +300,13 @@ public class RecipeMakerItem extends BaseItem {
 			if (ModConfigs.RECIPE_MAKER_USE_TAGS.get() && tagId != null) {
 				item = "tag:items:" + tagId;
 			} else {
-				var id = ForgeRegistries.ITEMS.getKey(stack.getItem());
-				item = id == null ? "item:minecraft:air" : "item:" + id;
+				var id = BuiltInRegistries.ITEM.getKey(stack.getItem());
+				item = "item:" + id;
 			}
 
-			if (ModConfigs.RECIPE_MAKER_USE_NBT.get() && !stack.isEmpty() && stack.hasTag() && !item.startsWith("tag") && ModList.get().isLoaded("crafttweaker")) {
-				var nbt = stack.getTag();
-				var tag = CraftTweakerUtils.writeTag(nbt);
+			if (ModConfigs.RECIPE_MAKER_USE_NBT.get() && !stack.isEmpty() && stack.has(DataComponents.CUSTOM_DATA) && !item.startsWith("tag") && ModList.get().isLoaded("crafttweaker")) {
+				var nbt = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+				var tag = CraftTweakerUtils.writeTag(nbt.copyTag());
 
 				string.append(".withTag(").append(tag).append(")");
 			}
@@ -350,8 +349,8 @@ public class RecipeMakerItem extends BaseItem {
 			if (ModConfigs.RECIPE_MAKER_USE_TAGS.get() && tag != null) {
 				keysMap.put(Ingredient.of(tag), key);
 			} else {
-				if (ModConfigs.RECIPE_MAKER_USE_NBT.get() && stack.hasTag()) {
-					keysMap.put(StrictNBTIngredient.of(stack), key);
+				if (ModConfigs.RECIPE_MAKER_USE_NBT.get()) {
+					keysMap.put(DataComponentIngredient.of(true, stack), key);
 				} else {
 					keysMap.put(Ingredient.of(stack), key);
 				}
@@ -388,7 +387,7 @@ public class RecipeMakerItem extends BaseItem {
 		var key = new JsonObject();
 
 		for (var entry : keys) {
-			key.add(entry.getValue().toString(), entry.getKey().toJson());
+			key.add(entry.getValue().toString(), Ingredient.CODEC.encodeStart(JsonOps.INSTANCE, entry.getKey()).getOrThrow());
 		}
 
 		object.add("key", key);
@@ -428,11 +427,14 @@ public class RecipeMakerItem extends BaseItem {
 					tag.addProperty("tag", tagId.toString());
 					ingredients.add(tag);
 				} else {
-					if (ModConfigs.RECIPE_MAKER_USE_NBT.get() && stack.hasTag()) {
-						ingredients.add(StrictNBTIngredient.of(stack).toJson());
+					Ingredient ingredient;
+					if (ModConfigs.RECIPE_MAKER_USE_NBT.get()) {
+						ingredient = DataComponentIngredient.of(true, stack);
 					} else {
-						ingredients.add(Ingredient.of(stack).toJson());
+						ingredient = Ingredient.of(stack);
 					}
+
+					ingredients.add(Ingredient.CODEC.encodeStart(JsonOps.INSTANCE, ingredient).getOrThrow());
 				}
 			}
 		}
@@ -456,7 +458,7 @@ public class RecipeMakerItem extends BaseItem {
 
 		var input = core.getInventory().getStackInSlot(0);
 
-		object.add("input", Ingredient.of(input).toJson());
+		object.add("input", ItemStack.CODEC.encodeStart(JsonOps.INSTANCE, input).getOrThrow());
 
 		var ingredients = new JsonArray();
 		var stacks = core.getPedestalsWithItems().values().stream().filter(s -> !s.isEmpty()).toArray(ItemStack[]::new);
@@ -470,11 +472,14 @@ public class RecipeMakerItem extends BaseItem {
 				tag.addProperty("tag", tagId.toString());
 				ingredients.add(tag);
 			} else {
-				if (ModConfigs.RECIPE_MAKER_USE_NBT.get() && stack.hasTag()) {
-					ingredients.add(StrictNBTIngredient.of(stack).toJson());
+				Ingredient ingredient;
+				if (ModConfigs.RECIPE_MAKER_USE_NBT.get()) {
+					ingredient = DataComponentIngredient.of(true, stack);
 				} else {
-					ingredients.add(Ingredient.of(stack).toJson());
+					ingredient = Ingredient.of(stack);
 				}
+
+				ingredients.add(Ingredient.CODEC.encodeStart(JsonOps.INSTANCE, ingredient).getOrThrow());
 			}
 		}
 
@@ -498,12 +503,16 @@ public class RecipeMakerItem extends BaseItem {
 				tile instanceof FluxCrafterTileEntity;
 	}
 
+	private static String getType(ItemStack stack) {
+		return stack.getOrDefault(ModDataComponentTypes.RECIPE_MAKER, RecipeMakerComponent.EMPTY).type();
+	}
+
 	private static String getModeString(ItemStack stack) {
 		return isShapeless(stack) ? "Shapeless" : "Shaped";
 	}
 
 	private static boolean isShapeless(ItemStack stack) {
-		return NBTHelper.getBoolean(stack, "Shapeless");
+		return stack.getOrDefault(ModDataComponentTypes.RECIPE_MAKER, RecipeMakerComponent.EMPTY).shapeless();
 	}
 
 	private static int getGridSlots(IItemHandler inventory) {

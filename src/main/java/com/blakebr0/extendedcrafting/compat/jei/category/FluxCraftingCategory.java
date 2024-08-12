@@ -10,6 +10,7 @@ import com.blakebr0.extendedcrafting.init.ModBlocks;
 import com.blakebr0.extendedcrafting.lib.ModTooltips;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
+import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
@@ -23,10 +24,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.List;
-
 public class FluxCraftingCategory implements IRecipeCategory<IFluxCrafterRecipe> {
-	private static final ResourceLocation TEXTURE = new ResourceLocation(ExtendedCrafting.MOD_ID, "textures/jei/flux_crafting.png");
+	private static final ResourceLocation TEXTURE = ExtendedCrafting.resource("textures/jei/flux_crafting.png");
 	public static final RecipeType<IFluxCrafterRecipe> RECIPE_TYPE = RecipeType.create(ExtendedCrafting.MOD_ID, "flux_crafting", IFluxCrafterRecipe.class);
 
 	private final IDrawable background;
@@ -58,15 +57,11 @@ public class FluxCraftingCategory implements IRecipeCategory<IFluxCrafterRecipe>
 	}
 
 	@Override
-	public List<Component> getTooltipStrings(IFluxCrafterRecipe recipe, IRecipeSlotsView slots, double mouseX, double mouseY) {
+	public void getTooltip(ITooltipBuilder tooltip, IFluxCrafterRecipe recipe, IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
 		if (mouseX > 1 && mouseX < 14 && mouseY > 1 && mouseY < 78) {
-			return List.of(
-					Formatting.energy(recipe.getPowerRequired()),
-					ModTooltips.PER_ALTERNATOR.args(Formatting.energyPerTick(recipe.getPowerRate())).color(ChatFormatting.WHITE).build()
-			);
+			tooltip.add(Formatting.energy(recipe.getPowerRequired()));
+			tooltip.add(ModTooltips.PER_ALTERNATOR.args(Formatting.energyPerTick(recipe.getPowerRate())).color(ChatFormatting.WHITE).build());
 		}
-
-		return List.of();
 	}
 
 	@Override

@@ -5,7 +5,7 @@ import com.blakebr0.cucumber.inventory.BaseItemStackHandler;
 import com.blakebr0.extendedcrafting.container.inventory.ExtendedCraftingInventory;
 import com.blakebr0.extendedcrafting.container.slot.AutoTableOutputSlot;
 import com.blakebr0.extendedcrafting.container.slot.TableOutputSlot;
-import com.blakebr0.extendedcrafting.init.ModContainerTypes;
+import com.blakebr0.extendedcrafting.init.ModMenuTypes;
 import com.blakebr0.extendedcrafting.init.ModRecipeTypes;
 import com.blakebr0.extendedcrafting.tileentity.AutoTableTileEntity;
 import net.minecraft.core.BlockPos;
@@ -13,6 +13,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.ResultContainer;
 import net.minecraft.world.inventory.Slot;
@@ -22,6 +23,7 @@ import net.minecraft.world.level.Level;
 public class UltimateAutoTableContainer extends BaseContainerMenu {
 	private final Level level;
 	private final Container result;
+	private final CraftingContainer matrix;
 
 	private UltimateAutoTableContainer(MenuType<?> type, int id, Inventory playerInventory, FriendlyByteBuf buffer) {
 		this(type, id, playerInventory, AutoTableTileEntity.Ultimate.createInventoryHandler(), buffer.readBlockPos());
@@ -31,19 +33,18 @@ public class UltimateAutoTableContainer extends BaseContainerMenu {
 		super(type, id, pos);
 		this.level = playerInventory.player.level();
 		this.result = new ResultContainer();
+		this.matrix = new ExtendedCraftingInventory(this, inventory, 9, true);
 
-		var matrix = new ExtendedCraftingInventory(this, inventory, 9, true);
-
-		this.addSlot(new TableOutputSlot(this, matrix, this.result, 0, 225, 89));
+		this.addSlot(new TableOutputSlot(this, this.matrix, this.result, 0, 225, 89));
 		
 		int i, j;
 		for (i = 0; i < 9; i++) {
 			for (j = 0; j < 9; j++) {
-				this.addSlot(new Slot(matrix, j + i * 9, 27 + j * 18, 18 + i * 18));
+				this.addSlot(new Slot(this.matrix, j + i * 9, 27 + j * 18, 18 + i * 18));
 			}
 		}
 
-		this.addSlot(new AutoTableOutputSlot(this, matrix, inventory, 81, 225, 133));
+		this.addSlot(new AutoTableOutputSlot(this, this.matrix, inventory, 81, 225, 133));
 
 		for (i = 0; i < 3; i++) {
 			for (j = 0; j < 9; j++) {
@@ -60,10 +61,11 @@ public class UltimateAutoTableContainer extends BaseContainerMenu {
 
 	@Override
 	public void slotsChanged(Container matrix) {
-		var recipe = this.level.getRecipeManager().getRecipeFor(ModRecipeTypes.TABLE.get(), matrix, this.level);
+		var inventory = this.matrix.asCraftInput();
+		var recipe = this.level.getRecipeManager().getRecipeFor(ModRecipeTypes.TABLE.get(), inventory, this.level);
 
 		if (recipe.isPresent()) {
-			var result = recipe.get().assemble(matrix, this.level.registryAccess());
+			var result = recipe.get().value().assemble(inventory, this.level.registryAccess());
 			this.result.setItem(0, result);
 		} else {
 			this.result.setItem(0, ItemStack.EMPTY);
@@ -112,10 +114,10 @@ public class UltimateAutoTableContainer extends BaseContainerMenu {
 	}
 
 	public static UltimateAutoTableContainer create(int windowId, Inventory playerInventory, FriendlyByteBuf buffer) {
-		return new UltimateAutoTableContainer(ModContainerTypes.ULTIMATE_AUTO_TABLE.get(), windowId, playerInventory, buffer);
+		return new UltimateAutoTableContainer(ModMenuTypes.ULTIMATE_AUTO_TABLE.get(), windowId, playerInventory, buffer);
 	}
 
 	public static UltimateAutoTableContainer create(int windowId, Inventory playerInventory, BaseItemStackHandler inventory, BlockPos pos) {
-		return new UltimateAutoTableContainer(ModContainerTypes.ULTIMATE_AUTO_TABLE.get(), windowId, playerInventory, inventory, pos);
+		return new UltimateAutoTableContainer(ModMenuTypes.ULTIMATE_AUTO_TABLE.get(), windowId, playerInventory, inventory, pos);
 	}
 }

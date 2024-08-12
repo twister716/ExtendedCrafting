@@ -7,6 +7,7 @@ import com.blakebr0.extendedcrafting.api.crafting.ICombinationRecipe;
 import com.blakebr0.extendedcrafting.init.ModBlocks;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
+import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
@@ -23,7 +24,7 @@ import java.awt.*;
 import java.util.List;
 
 public class CombinationCraftingCategory implements IRecipeCategory<ICombinationRecipe> {
-	private static final ResourceLocation TEXTURE = new ResourceLocation(ExtendedCrafting.MOD_ID, "textures/jei/combination_crafting.png");
+	private static final ResourceLocation TEXTURE = ExtendedCrafting.resource("textures/jei/combination_crafting.png");
 	public static final RecipeType<ICombinationRecipe> RECIPE_TYPE = RecipeType.create(ExtendedCrafting.MOD_ID, "combination", ICombinationRecipe.class);
 
 	private final IDrawable background;
@@ -55,19 +56,15 @@ public class CombinationCraftingCategory implements IRecipeCategory<ICombination
 	}
 
 	@Override
-	public List<Component> getTooltipStrings(ICombinationRecipe recipe, IRecipeSlotsView slots, double mouseX, double mouseY) {
+	public void getTooltip(ITooltipBuilder tooltip, ICombinationRecipe recipe, IRecipeSlotsView slots, double mouseX, double mouseY) {
 		if (mouseX > 1 && mouseX < 14 && mouseY > 9 && mouseY < 86) {
-			return List.of(
-					Formatting.energy(recipe.getPowerCost()),
-					Formatting.energyPerTick(recipe.getPowerRate())
-			);
+			tooltip.add(Formatting.energy(recipe.getPowerCost()));
+			tooltip.add(Formatting.energyPerTick(recipe.getPowerRate()));
 		}
 
 		if (mouseX > 5 && mouseX < 23 && mouseY > 144 && mouseY < 165) {
-			return recipe.getInputsList();
+			tooltip.addAll(recipe.getInputsList());
 		}
-
-		return List.of();
 	}
 
 	@Override
@@ -79,7 +76,7 @@ public class CombinationCraftingCategory implements IRecipeCategory<ICombination
 		var inputs = recipe.getIngredients();
 		var output = recipe.getResultItem(level.registryAccess());
 
-		builder.addSlot(RecipeIngredientRole.INPUT, 77, 47).addIngredients(inputs.get(0));
+		builder.addSlot(RecipeIngredientRole.INPUT, 77, 47).addIngredients(inputs.getFirst());
 
 		double angleBetweenEach = 360.0 / (inputs.size() - 1);
 		Point point = new Point(53, 8), center = new Point(74, 47);

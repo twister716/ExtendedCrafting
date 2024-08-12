@@ -1,13 +1,12 @@
 package com.blakebr0.extendedcrafting.crafting;
 
 import com.blakebr0.cucumber.inventory.BaseItemStackHandler;
-import com.blakebr0.extendedcrafting.container.inventory.ExtendedCraftingInventory;
-import com.blakebr0.extendedcrafting.util.EmptyContainer;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
@@ -64,7 +63,7 @@ public class TableRecipeStorage {
         return IntStream.range(0, this.recipes.length).anyMatch(this::hasRecipe);
     }
 
-    public void setRecipe(int index, Container inventory, ItemStack output) {
+    public void setRecipe(int index, CraftingInput inventory, ItemStack output) {
         var recipe = BaseItemStackHandler.create(this.slots);
 
         for (int i = 0; i < this.slots - 1; i++) {
@@ -106,11 +105,11 @@ public class TableRecipeStorage {
         return this.selectedRecipeGrid;
     }
 
-    public CompoundTag serializeNBT() {
+    public CompoundTag serializeNBT(HolderLookup.Provider lookup) {
         var recipes = new ListTag();
 
         for (int i = 0; i < this.recipes.length; i++) {
-            recipes.add(i, this.recipes[i].serializeNBT());
+            recipes.add(i, this.recipes[i].serializeNBT(lookup));
         }
 
         var tag = new CompoundTag();
@@ -121,11 +120,11 @@ public class TableRecipeStorage {
         return tag;
     }
 
-    public void deserializeNBT(CompoundTag tag) {
+    public void deserializeNBT(HolderLookup.Provider lookup, CompoundTag tag) {
         var recipes = tag.getList("Recipes", Tag.TAG_COMPOUND);
 
         for (int i = 0; i < recipes.size(); i++) {
-            this.recipes[i].deserializeNBT(recipes.getCompound(i));
+            this.recipes[i].deserializeNBT(lookup, recipes.getCompound(i));
         }
 
         this.selected = tag.getInt("Selected");
@@ -133,14 +132,14 @@ public class TableRecipeStorage {
         this.updateSelectedRecipeGrid();
     }
 
-    public void onLoad(Level level, RecipeType<? extends Recipe<Container>> type) {
+    public void onLoad(Level level, RecipeType<? extends Recipe<CraftingInput>> type) {
         for (int i = 0; i < this.recipes.length; i++) {
             if (this.hasRecipe(i)) {
                 var recipe = this.recipes[i];
                 var grid = this.createRecipeGrid(recipe);
-                var inventory = new ExtendedCraftingInventory(EmptyContainer.INSTANCE, grid, 3);
+                var inventory = CraftingInput.of(3, 3, grid.getStacks());
                 var result = level.getRecipeManager().getRecipeFor(type, inventory, level)
-                        .map(r -> r.assemble(inventory, level.registryAccess()))
+                        .map(r -> r.value().assemble(inventory, level.registryAccess()))
                         .orElse(ItemStack.EMPTY);
 
                 recipe.setStackInSlot(this.slots - 1, result);

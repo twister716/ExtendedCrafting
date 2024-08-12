@@ -4,7 +4,7 @@ import com.blakebr0.cucumber.container.BaseContainerMenu;
 import com.blakebr0.cucumber.inventory.BaseItemStackHandler;
 import com.blakebr0.extendedcrafting.container.inventory.ExtendedCraftingInventory;
 import com.blakebr0.extendedcrafting.container.slot.TableOutputSlot;
-import com.blakebr0.extendedcrafting.init.ModContainerTypes;
+import com.blakebr0.extendedcrafting.init.ModMenuTypes;
 import com.blakebr0.extendedcrafting.init.ModRecipeTypes;
 import com.blakebr0.extendedcrafting.tileentity.AdvancedTableTileEntity;
 import net.minecraft.core.BlockPos;
@@ -12,6 +12,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.ResultContainer;
 import net.minecraft.world.inventory.Slot;
@@ -21,6 +22,7 @@ import net.minecraft.world.level.Level;
 public class AdvancedTableContainer extends BaseContainerMenu {
 	private final Level level;
 	private final Container result;
+	private final CraftingContainer matrix;
 
 	private AdvancedTableContainer(MenuType<?> type, int id, Inventory playerInventory, FriendlyByteBuf buffer) {
 		this(type, id, playerInventory, AdvancedTableTileEntity.createInventoryHandler(), buffer.readBlockPos());
@@ -30,15 +32,14 @@ public class AdvancedTableContainer extends BaseContainerMenu {
 		super(type, id, pos);
 		this.level = playerInventory.player.level();
 		this.result = new ResultContainer();
+		this.matrix = new ExtendedCraftingInventory(this, inventory, 5);
 
-		var matrix = new ExtendedCraftingInventory(this, inventory, 5);
-
-		this.addSlot(new TableOutputSlot(this, matrix, this.result, 0, 142, 53));
+		this.addSlot(new TableOutputSlot(this, this.matrix, this.result, 0, 142, 53));
 		
 		int i, j;
 		for (i = 0; i < 5; i++) {
 			for (j = 0; j < 5; j++) {
-				this.addSlot(new Slot(matrix, j + i * 5, 14 + j * 18, 18 + i * 18));
+				this.addSlot(new Slot(this.matrix, j + i * 5, 14 + j * 18, 18 + i * 18));
 			}
 		}
 
@@ -52,15 +53,16 @@ public class AdvancedTableContainer extends BaseContainerMenu {
 			this.addSlot(new Slot(playerInventory, j, 8 + j * 18, 182));
 		}
 
-		this.slotsChanged(matrix);
+		this.slotsChanged(this.matrix);
 	}
 
 	@Override
 	public void slotsChanged(Container matrix) {
-		var recipe = this.level.getRecipeManager().getRecipeFor(ModRecipeTypes.TABLE.get(), matrix, this.level);
+		var inventory = this.matrix.asCraftInput();
+		var recipe = this.level.getRecipeManager().getRecipeFor(ModRecipeTypes.TABLE.get(), inventory, this.level);
 
 		if (recipe.isPresent()) {
-			var result = recipe.get().assemble(matrix, this.level.registryAccess());
+			var result = recipe.get().value().assemble(inventory, this.level.registryAccess());
 			this.result.setItem(0, result);
 		} else {
 			this.result.setItem(0, ItemStack.EMPTY);
@@ -109,10 +111,10 @@ public class AdvancedTableContainer extends BaseContainerMenu {
 	}
 
 	public static AdvancedTableContainer create(int windowId, Inventory playerInventory, FriendlyByteBuf buffer) {
-		return new AdvancedTableContainer(ModContainerTypes.ADVANCED_TABLE.get(), windowId, playerInventory, buffer);
+		return new AdvancedTableContainer(ModMenuTypes.ADVANCED_TABLE.get(), windowId, playerInventory, buffer);
 	}
 
 	public static AdvancedTableContainer create(int windowId, Inventory playerInventory, BaseItemStackHandler inventory, BlockPos pos) {
-		return new AdvancedTableContainer(ModContainerTypes.ADVANCED_TABLE.get(), windowId, playerInventory, inventory, pos);
+		return new AdvancedTableContainer(ModMenuTypes.ADVANCED_TABLE.get(), windowId, playerInventory, inventory, pos);
 	}
 }

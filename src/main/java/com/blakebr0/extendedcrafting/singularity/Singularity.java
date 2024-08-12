@@ -2,13 +2,18 @@ package com.blakebr0.extendedcrafting.singularity;
 
 import com.blakebr0.cucumber.util.Localizable;
 import com.blakebr0.extendedcrafting.config.ModConfigs;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.crafting.Ingredient;
 
 public class Singularity {
+    public static final StreamCodec<RegistryFriendlyByteBuf, Singularity> STREAM_CODEC = StreamCodec.of(
+            Singularity::encode, Singularity::read
+    );
+
     private final ResourceLocation id;
     private final String name;
     private final int[] colors;
@@ -68,7 +73,7 @@ public class Singularity {
 
     public Ingredient getIngredient() {
         if (this.tag != null && this.ingredient == Ingredient.EMPTY) {
-            var tag = ItemTags.create(new ResourceLocation(this.tag));
+            var tag = ItemTags.create(ResourceLocation.parse(this.tag));
             this.ingredient = Ingredient.of(tag);
         }
 
@@ -99,7 +104,7 @@ public class Singularity {
         this.enabled = enabled;
     }
 
-    public void write(FriendlyByteBuf buffer) {
+    public void write(RegistryFriendlyByteBuf buffer) {
         buffer.writeResourceLocation(this.id);
         buffer.writeUtf(this.name);
         buffer.writeVarIntArray(this.colors);
@@ -108,7 +113,7 @@ public class Singularity {
         if (this.tag != null) {
             buffer.writeUtf(this.tag);
         } else {
-            this.ingredient.toNetwork(buffer);
+            Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, this.ingredient);
         }
 
         buffer.writeVarInt(this.getIngredientCount());
@@ -116,7 +121,11 @@ public class Singularity {
         buffer.writeBoolean(this.enabled);
     }
 
-    public static Singularity read(FriendlyByteBuf buffer) {
+    public static void encode(RegistryFriendlyByteBuf buffer, Singularity singularity) {
+        singularity.write(buffer);
+    }
+
+    public static Singularity read(RegistryFriendlyByteBuf buffer) {
         var id = buffer.readResourceLocation();
         var name = buffer.readUtf();
         int[] colors = buffer.readVarIntArray();
@@ -128,7 +137,7 @@ public class Singularity {
         if (isTagIngredient) {
             tag = buffer.readUtf();
         } else {
-            ingredient = Ingredient.fromNetwork(buffer);
+            ingredient = Ingredient.CONTENTS_STREAM_CODEC.decode(buffer);
         }
 
         int ingredientCount = buffer.readVarInt();

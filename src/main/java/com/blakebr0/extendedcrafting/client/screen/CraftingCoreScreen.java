@@ -12,7 +12,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
 public class CraftingCoreScreen extends BaseContainerScreen<CraftingCoreContainer> {
-	private static final ResourceLocation BACKGROUND = new ResourceLocation(ExtendedCrafting.MOD_ID, "textures/gui/crafting_core.png");
+	private static final ResourceLocation BACKGROUND = ExtendedCrafting.resource("textures/gui/crafting_core.png");
 	private CraftingCoreTileEntity tile;
 
 	public CraftingCoreScreen(CraftingCoreContainer container, Inventory inventory, Component title) {

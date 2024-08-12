@@ -1,11 +1,11 @@
 modLoader="javafml"
-loaderVersion="[47,)"
+loaderVersion="[4,)"
 license="MIT"
 
 [[mods]]
     issueTrackerURL="https://github.com/BlakeBr0/ExtendedCrafting/issues"
     modId="extendedcrafting"
-    version="${file.jarVersion}"
+    version="${mod_version}"
     displayName="Extended Crafting"
     # updateJSONURL="http://myurl.me/"
     displayURL="https://blakesmods.com/extended-crafting"
@@ -17,15 +17,15 @@ license="MIT"
     '''
 
     [[dependencies.extendedcrafting]]
-        modId="forge"
+        modId="neoforge"
         mandatory=true
-        versionRange="[47.1.0,)"
+        versionRange="[21.0.0-beta,)"
         ordering="NONE"
         side="BOTH"
     [[dependencies.extendedcrafting]]
         modId="minecraft"
         mandatory=true
-        versionRange="[1.20.1]"
+        versionRange="[1.21,1.21.1)"
         ordering="NONE"
         side="BOTH"
     [[dependencies.extendedcrafting]]

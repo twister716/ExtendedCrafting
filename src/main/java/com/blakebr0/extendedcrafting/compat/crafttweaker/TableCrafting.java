@@ -16,15 +16,14 @@ import com.blamejared.crafttweaker.api.item.MCItemStack;
 import com.blamejared.crafttweaker.api.recipe.manager.base.IRecipeManager;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.ShapedRecipePattern;
 import org.openzen.zencode.java.ZenCodeType;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @ZenCodeType.Name("mods.extendedcrafting.TableCrafting")
@@ -49,7 +48,7 @@ public final class TableCrafting implements IRecipeManager<ITableRecipe> {
 		if (tier > 4 || tier < 0) {
 			tier = 0;
 
-			CraftTweakerAPI.getLogger(ExtendedCrafting.MOD_ID).error("Unable to assign a tier to the Table Recipe for stack " + output.getCommandString() + ". Tier cannot be greater than 4 or less than 0.");
+			CraftTweakerAPI.getLogger(ExtendedCrafting.MOD_ID).error("Unable to assign a tier to the shaped Table Recipe for stack " + output.getCommandString() + ". Tier cannot be greater than 4 or less than 0.");
 		}
 
 		int height = inputs.length;
@@ -72,11 +71,12 @@ public final class TableCrafting implements IRecipeManager<ITableRecipe> {
 			}
 		}
 
-		var recipe = new ShapedTableRecipe(id, width, height, ingredients, output.getInternal(), tier);
+		var pattern = new ShapedRecipePattern(width, height, ingredients, Optional.empty());
+		var recipe = new ShapedTableRecipe(pattern, output.getInternal(), tier);
 
 		recipe.setTransformer((x, y, stack) -> inputs[y][x].getRemainingItem(new MCItemStack(stack)).getInternal());
 
-		CraftTweakerAPI.apply(new ActionAddRecipe<>(INSTANCE, recipe));
+		CraftTweakerAPI.apply(new ActionAddRecipe<>(INSTANCE, new RecipeHolder<>(id, recipe)));
 	}
 
 	@ZenCodeType.Method
@@ -91,19 +91,19 @@ public final class TableCrafting implements IRecipeManager<ITableRecipe> {
 		if (tier > 4 || tier < 0) {
 			tier = 0;
 
-			CraftTweakerAPI.getLogger(ExtendedCrafting.MOD_ID).error("Unable to assign a tier to the Table Recipe for stack " + output.getCommandString() + ". Tier cannot be greater than 4 or less than 0.");
+			CraftTweakerAPI.getLogger(ExtendedCrafting.MOD_ID).error("Unable to assign a tier to the shapeless Table Recipe for stack " + output.getCommandString() + ". Tier cannot be greater than 4 or less than 0.");
 		}
 
-		var recipe = new ShapelessTableRecipe(id, toIngredientsList(inputs), output.getInternal(), tier);
+		var recipe = new ShapelessTableRecipe(toIngredientsList(inputs), output.getInternal(), tier);
 
 		recipe.setTransformer((slot, stack) -> inputs[slot].getRemainingItem(new MCItemStack(stack)).getInternal());
 
-		CraftTweakerAPI.apply(new ActionAddRecipe<>(INSTANCE, recipe));
+		CraftTweakerAPI.apply(new ActionAddRecipe<>(INSTANCE, new RecipeHolder<>(id, recipe)));
 	}
 
 	@ZenCodeType.Method
 	public static void remove(IItemStack stack) {
-		CraftTweakerAPI.apply(new ActionRemoveRecipe<>(INSTANCE, recipe -> recipe.getResultItem(RegistryAccess.EMPTY).is(stack.getInternal().getItem())));
+		CraftTweakerAPI.apply(new ActionRemoveRecipe<>(INSTANCE, recipe -> recipe.value().getResultItem(RegistryAccess.EMPTY).is(stack.getInternal().getItem())));
 	}
 
 	private static NonNullList<Ingredient> toIngredientsList(IIngredient... ingredients) {

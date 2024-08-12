@@ -8,6 +8,7 @@ import com.blakebr0.extendedcrafting.init.ModBlocks;
 import com.blakebr0.extendedcrafting.lib.ModTooltips;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
+import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
@@ -24,7 +25,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.List;
 
 public class CompressorCraftingCategory implements IRecipeCategory<ICompressorRecipe> {
-	private static final ResourceLocation TEXTURE = new ResourceLocation(ExtendedCrafting.MOD_ID, "textures/jei/compressor.png");
+	private static final ResourceLocation TEXTURE = ExtendedCrafting.resource("textures/jei/compressor.png");
 	public static final RecipeType<ICompressorRecipe> RECIPE_TYPE = RecipeType.create(ExtendedCrafting.MOD_ID, "compressor", ICompressorRecipe.class);
 
 	private final IDrawable background;
@@ -56,19 +57,15 @@ public class CompressorCraftingCategory implements IRecipeCategory<ICompressorRe
 	}
 
 	@Override
-	public List<Component> getTooltipStrings(ICompressorRecipe recipe, IRecipeSlotsView slots, double mouseX, double mouseY) {
+	public void getTooltip(ITooltipBuilder tooltip, ICompressorRecipe recipe, IRecipeSlotsView slots, double mouseX, double mouseY) {
 		if (mouseX > 1 && mouseX < 14 && mouseY > 1 && mouseY < 78) {
-			return List.of(
-					Formatting.energy(recipe.getPowerCost()),
-					Formatting.energyPerTick(recipe.getPowerRate())
-			);
+			tooltip.add(Formatting.energy(recipe.getPowerCost()));
+			tooltip.add(Formatting.energyPerTick(recipe.getPowerRate()));
 		}
 
 		if (mouseX > 54 && mouseX < 78 && mouseY > 58 && mouseY < 68) {
-			return List.of(ModTooltips.NUM_ITEMS.args(Formatting.number(recipe.getInputCount())).color(ChatFormatting.WHITE).build());
+			tooltip.add(ModTooltips.NUM_ITEMS.args(Formatting.number(recipe.getCount(0))).color(ChatFormatting.WHITE).build());
 		}
-
-		return List.of();
 	}
 
 	@Override

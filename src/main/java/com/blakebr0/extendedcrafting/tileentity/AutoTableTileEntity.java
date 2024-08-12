@@ -3,50 +3,40 @@ package com.blakebr0.extendedcrafting.tileentity;
 import com.blakebr0.cucumber.energy.BaseEnergyStorage;
 import com.blakebr0.cucumber.helper.StackHelper;
 import com.blakebr0.cucumber.inventory.BaseItemStackHandler;
-import com.blakebr0.cucumber.inventory.RecipeInventory;
 import com.blakebr0.cucumber.tileentity.BaseInventoryTileEntity;
 import com.blakebr0.cucumber.util.Localizable;
-import com.blakebr0.extendedcrafting.api.crafting.ITableRecipe;
 import com.blakebr0.extendedcrafting.config.ModConfigs;
 import com.blakebr0.extendedcrafting.container.AdvancedAutoTableContainer;
 import com.blakebr0.extendedcrafting.container.BasicAutoTableContainer;
 import com.blakebr0.extendedcrafting.container.EliteAutoTableContainer;
 import com.blakebr0.extendedcrafting.container.UltimateAutoTableContainer;
-import com.blakebr0.extendedcrafting.container.inventory.ExtendedCraftingInventory;
 import com.blakebr0.extendedcrafting.crafting.TableRecipeStorage;
 import com.blakebr0.extendedcrafting.init.ModRecipeTypes;
 import com.blakebr0.extendedcrafting.init.ModTileEntities;
-import com.blakebr0.extendedcrafting.util.EmptyContainer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.Container;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.items.IItemHandler;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.items.IItemHandler;
 
-import java.util.function.BiFunction;
-import java.util.function.Function;
+import java.util.Optional;
 
 public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implements MenuProvider {
-    private final LazyOptional<IEnergyStorage> energyCapability = LazyOptional.of(this::getEnergy);
-    private WrappedRecipe recipe;
+    private Recipe<CraftingInput> recipe;
     private int progress;
     private boolean running = true;
     private boolean isGridChanged = true;
@@ -56,21 +46,21 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
     }
 
     @Override
-    public void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
-        tag.putInt("Progress", this.progress);
-        tag.putBoolean("Running", this.running);
-        tag.put("Energy", this.getEnergy().serializeNBT());
-        tag.merge(this.getRecipeStorage().serializeNBT());
+    public void loadAdditional(CompoundTag tag, HolderLookup.Provider lookup) {
+        super.loadAdditional(tag, lookup);
+        this.progress = tag.getInt("Progress");
+        this.running = tag.getBoolean("Running");
+        this.getEnergy().deserializeNBT(lookup, tag.get("Energy"));
+        this.getRecipeStorage().deserializeNBT(lookup, tag);
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
-        this.progress = tag.getInt("Progress");
-        this.running = tag.getBoolean("Running");
-        this.getEnergy().deserializeNBT(tag.get("Energy"));
-        this.getRecipeStorage().deserializeNBT(tag);
+    public void saveAdditional(CompoundTag tag, HolderLookup.Provider lookup) {
+        super.saveAdditional(tag, lookup);
+        tag.putInt("Progress", this.progress);
+        tag.putBoolean("Running", this.running);
+        tag.putInt("Energy", this.getEnergy().getEnergyStored());
+        tag.merge(this.getRecipeStorage().serializeNBT(lookup));
     }
 
     @Override
@@ -83,26 +73,16 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
         }
     }
 
-    @Override
-    public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
-        if (!this.isRemoved() && cap == ForgeCapabilities.ENERGY) {
-            return ForgeCapabilities.ENERGY.orEmpty(cap, this.energyCapability);
-        }
-
-        return super.getCapability(cap, side);
-    }
-
     public static void tick(Level level, BlockPos pos, BlockState state, AutoTableTileEntity tile) {
         var energy = tile.getEnergy();
 
         if (tile.running) {
             var recipe = tile.getActiveRecipe();
-            var selectedRecipe = tile.getRecipeStorage().getSelectedRecipeGrid();
 
-            if (recipe != null && (selectedRecipe == null || recipe.matchesSavedRecipe(selectedRecipe, level))) {
+            if (recipe != null && tile.matchesSelectedRecipe(recipe)) {
                 var recipeInventory = tile.getRecipeInventory();
                 var inventory = tile.getInventory();
-                var result = recipe.getCraftingResult(recipeInventory, level.registryAccess());
+                var result = recipe.assemble(recipeInventory, level.registryAccess());
                 int outputSlot = inventory.getSlots() - 1;
                 var output = inventory.getStackInSlot(outputSlot);
                 int powerRate = ModConfigs.AUTO_TABLE_POWER_RATE.get();
@@ -114,7 +94,7 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
                     if (tile.progress >= tile.getProgressRequired()) {
                         var remaining = recipe.getRemainingItems(recipeInventory);
 
-                        for (int i = 0; i < recipeInventory.getContainerSize(); i++) {
+                        for (int i = 0; i < recipeInventory.size(); i++) {
                             if (!remaining.get(i).isEmpty()) {
                                 inventory.setStackInSlot(i, remaining.get(i));
                             } else {
@@ -198,13 +178,14 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
         var result = ItemStack.EMPTY;
 
         if (recipe != null) {
-            result = recipe.assemble(inventory, level.registryAccess());
+            result = recipe.value().assemble(inventory, level.registryAccess());
         } else {
-            var craftingInventory = new ExtendedCraftingInventory(EmptyContainer.INSTANCE, this.getInventory(), 3, true);
-            var vanilla = level.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, craftingInventory, level).orElse(null);
+            var vanilla = level.getRecipeManager()
+                    .getRecipeFor(RecipeType.CRAFTING, inventory, level)
+                    .orElse(null);
 
             if (vanilla != null) {
-                result = vanilla.assemble(craftingInventory, level.registryAccess());
+                result = vanilla.value().assemble(inventory, level.registryAccess());
             }
         }
 
@@ -217,32 +198,48 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
         this.setChangedAndDispatch();
     }
 
-    public RecipeInventory getRecipeInventory() {
-        return this.getInventory().toRecipeInventory(0, this.getInventory().getSlots() - 1);
+    public CraftingInput getRecipeInventory() {
+        var inventory = this.getInventory();
+        var size = (int) Math.sqrt(inventory.getSlots() - 1);
+        return this.getInventory().toCraftingInput(size, size, 0, this.getInventory().getSlots() - 1);
     }
 
-    public WrappedRecipe getActiveRecipe() {
+    public Recipe<CraftingInput> getActiveRecipe() {
         if (this.level == null)
             return null;
 
         var inventory = this.getRecipeInventory();
 
         if (this.isGridChanged && (this.recipe == null || !this.recipe.matches(inventory, this.level))) {
-            var recipe = this.level.getRecipeManager().getRecipeFor(ModRecipeTypes.TABLE.get(), inventory, this.level).orElse(null);
-
-            this.recipe = recipe != null ? new WrappedRecipe(recipe) : null;
+            this.recipe = this.level.getRecipeManager()
+                    .getRecipeFor(ModRecipeTypes.TABLE.get(), inventory, this.level)
+                    .map(RecipeHolder::value)
+                    .orElse(null);
 
             if (this.recipe == null && ModConfigs.TABLE_USE_VANILLA_RECIPES.get() && this instanceof Basic) {
-                var craftingInventory = new ExtendedCraftingInventory(EmptyContainer.INSTANCE, this.getInventory(), 3, true);
-                var vanilla = this.level.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, craftingInventory, this.level).orElse(null);
-
-                this.recipe = vanilla != null ? new WrappedRecipe(vanilla, craftingInventory) : null;
+                this.recipe = this.level.getRecipeManager()
+                        .getRecipeFor(RecipeType.CRAFTING, inventory, this.level)
+                        .map(RecipeHolder::value)
+                        .orElse(null);
             }
 
             this.isGridChanged = false;
         }
 
         return this.recipe;
+    }
+
+    public boolean matchesSelectedRecipe(Recipe<CraftingInput> recipe) {
+        if (this.level == null)
+            return false;
+
+        var selectedRecipe = this.getRecipeStorage().getSelectedRecipe();
+        if (selectedRecipe == null)
+            return true;
+
+        var size = (int) Math.sqrt(this.getInventory().getSlots() - 1);
+
+        return recipe.matches(selectedRecipe.toCraftingInput(size, size), this.level);
     }
 
     public abstract int getProgressRequired();
@@ -278,19 +275,16 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
         }
     }
 
-    private LazyOptional<IItemHandler> getAboveInventory() {
+    private Optional<IItemHandler> getAboveInventory() {
         var level = this.getLevel();
         var pos = this.getBlockPos().above();
 
         if (level != null) {
-            var tile = level.getBlockEntity(pos);
-
-            if (tile != null) {
-                return tile.getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.DOWN);
-            }
+            var capability = level.getCapability(Capabilities.ItemHandler.BLOCK, pos, Direction.DOWN);
+            return Optional.ofNullable(capability);
         }
 
-        return LazyOptional.empty();
+        return Optional.empty();
     }
 
     private boolean tryInsertItemIntoGrid(ItemStack input) {
@@ -335,44 +329,6 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
 
 		return false;
 	}
-
-    public static class WrappedRecipe {
-        private final BiFunction<Container, RegistryAccess, ItemStack> resultFunc;
-        private final BiFunction<Container, Level, Boolean> matchesFunc;
-        private final BiFunction<CraftingContainer, Level, Boolean> matchesSavedRecipeFunc;
-        private final Function<Container, NonNullList<ItemStack>> remainingItemsFunc;
-
-        public WrappedRecipe(CraftingRecipe recipe, CraftingContainer craftingInventory) {
-            this.resultFunc = (inventory, access) -> recipe.assemble(craftingInventory, access);
-            this.matchesFunc = (inventory, level) -> recipe.matches(craftingInventory, level);
-            this.matchesSavedRecipeFunc = recipe::matches;
-            this.remainingItemsFunc = inventory -> recipe.getRemainingItems(craftingInventory);
-        }
-
-        public WrappedRecipe(ITableRecipe recipe) {
-            this.resultFunc = recipe::assemble;
-            this.matchesFunc = recipe::matches;
-            this.matchesSavedRecipeFunc = recipe::matches;
-            this.remainingItemsFunc = recipe::getRemainingItems;
-        }
-
-        public ItemStack getCraftingResult(Container inventory, RegistryAccess access) {
-            return this.resultFunc.apply(inventory, access);
-        }
-
-        public boolean matches(Container inventory, Level level) {
-            return this.matchesFunc.apply(inventory, level);
-        }
-
-        public boolean matchesSavedRecipe(BaseItemStackHandler inventory, Level level) {
-            var size = (int) Math.sqrt(inventory.getSlots());
-            return this.matchesSavedRecipeFunc.apply(new ExtendedCraftingInventory(EmptyContainer.INSTANCE, inventory, size), level);
-        }
-
-        public NonNullList<ItemStack> getRemainingItems(Container inventory) {
-            return this.remainingItemsFunc.apply(inventory);
-        }
-    }
 
     public static class Basic extends AutoTableTileEntity {
         private final BaseItemStackHandler inventory;

@@ -11,13 +11,13 @@ import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraftforge.common.ForgeHooks;
+import net.neoforged.neoforge.common.CommonHooks;
 
 public class TableOutputSlot extends Slot {
     private final AbstractContainerMenu container;
-    private final Container matrix;
+    private final CraftingContainer matrix;
 
-    public TableOutputSlot(AbstractContainerMenu container, Container matrix, Container inventory, int index, int xPosition, int yPosition) {
+    public TableOutputSlot(AbstractContainerMenu container, CraftingContainer matrix, Container inventory, int index, int xPosition, int yPosition) {
         super(inventory, index, xPosition, yPosition);
         this.container = container;
         this.matrix = matrix;
@@ -40,17 +40,17 @@ public class TableOutputSlot extends Slot {
 
         NonNullList<ItemStack> remaining;
 
-        ForgeHooks.setCraftingPlayer(player);
+        CommonHooks.setCraftingPlayer(player);
 
         var level = player.level();
 
         if (isVanilla) {
-            remaining = level.getRecipeManager().getRemainingItemsFor(RecipeType.CRAFTING, (CraftingContainer) this.matrix, level);
+            remaining = level.getRecipeManager().getRemainingItemsFor(RecipeType.CRAFTING, this.matrix.asCraftInput(), level);
         } else {
-            remaining = level.getRecipeManager().getRemainingItemsFor(ModRecipeTypes.TABLE.get(), this.matrix, level);
+            remaining = level.getRecipeManager().getRemainingItemsFor(ModRecipeTypes.TABLE.get(), this.matrix.asCraftInput(), level);
         }
 
-        ForgeHooks.setCraftingPlayer(null);
+        CommonHooks.setCraftingPlayer(null);
 
         for (int i = 0; i < remaining.size(); i++) {
             var slotStack = this.matrix.getItem(i);
@@ -64,7 +64,7 @@ public class TableOutputSlot extends Slot {
             if (!remainingStack.isEmpty()) {
                 if (slotStack.isEmpty()) {
                     this.matrix.setItem(i, remainingStack);
-                } else if (ItemStack.isSameItemSameTags(slotStack, remainingStack)) {
+                } else if (ItemStack.isSameItemSameComponents(slotStack, remainingStack)) {
                     remainingStack.grow(slotStack.getCount());
                     this.matrix.setItem(i, remainingStack);
                 } else if (!player.getInventory().add(remainingStack)) {
