@@ -38,11 +38,6 @@ public class FluxAlternatorScreen extends BaseContainerScreen<FluxAlternatorCont
 		gfx.drawString(this.font, this.playerInventoryTitle, 8, this.imageHeight - 94, 4210752, false);
 	}
 
-	@Override
-	protected void renderBg(GuiGraphics gfx, float partialTicks, int mouseX, int mouseY) {
-		this.renderDefaultBg(gfx, partialTicks, mouseX, mouseY);
-	}
-
 	private FluxAlternatorTileEntity getTileEntity() {
 		var level = this.getMinecraft().level;
 

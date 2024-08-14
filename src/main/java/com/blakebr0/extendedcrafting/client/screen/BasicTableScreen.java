@@ -22,9 +22,4 @@ public class BasicTableScreen extends BaseContainerScreen<BasicTableContainer> {
 		gfx.drawString(this.font, title, 32, 6, 4210752, false);
 		gfx.drawString(this.font, this.playerInventoryTitle, 8, this.imageHeight - 94, 4210752, false);
 	}
-
-	@Override
-	protected void renderBg(GuiGraphics gfx, float partialTicks, int mouseX, int mouseY) {
-		this.renderDefaultBg(gfx, partialTicks, mouseX, mouseY);
-	}
 }
