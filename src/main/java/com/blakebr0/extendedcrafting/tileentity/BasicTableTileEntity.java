@@ -1,6 +1,7 @@
 package com.blakebr0.extendedcrafting.tileentity;
 
 import com.blakebr0.cucumber.inventory.BaseItemStackHandler;
+import com.blakebr0.cucumber.inventory.OnContentsChangedFunction;
 import com.blakebr0.cucumber.tileentity.BaseInventoryTileEntity;
 import com.blakebr0.cucumber.util.Localizable;
 import com.blakebr0.extendedcrafting.container.BasicTableContainer;
@@ -18,7 +19,7 @@ public class BasicTableTileEntity extends BaseInventoryTileEntity implements Men
 
 	public BasicTableTileEntity(BlockPos pos, BlockState state) {
 		super(ModTileEntities.BASIC_TABLE.get(), pos, state);
-		this.inventory = createInventoryHandler(this::setChangedAndDispatch);
+		this.inventory = createInventoryHandler((slot) -> this.setChangedAndDispatch());
 	}
 
 	@Override
@@ -40,7 +41,7 @@ public class BasicTableTileEntity extends BaseInventoryTileEntity implements Men
 		return createInventoryHandler(null);
 	}
 
-	public static BaseItemStackHandler createInventoryHandler(Runnable onContentsChanged) {
-		return BaseItemStackHandler.create(9, onContentsChanged);
+	public static BaseItemStackHandler createInventoryHandler(OnContentsChangedFunction onContentsChanged) {
+		return BaseItemStackHandler.create(9, onContentsChanged, builder -> {});
 	}
 }

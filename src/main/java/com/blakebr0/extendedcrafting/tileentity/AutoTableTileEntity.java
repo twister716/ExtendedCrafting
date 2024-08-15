@@ -3,6 +3,7 @@ package com.blakebr0.extendedcrafting.tileentity;
 import com.blakebr0.cucumber.energy.BaseEnergyStorage;
 import com.blakebr0.cucumber.helper.StackHelper;
 import com.blakebr0.cucumber.inventory.BaseItemStackHandler;
+import com.blakebr0.cucumber.inventory.OnContentsChangedFunction;
 import com.blakebr0.cucumber.tileentity.BaseInventoryTileEntity;
 import com.blakebr0.cucumber.util.Localizable;
 import com.blakebr0.extendedcrafting.config.ModConfigs;
@@ -248,7 +249,7 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
 
     public abstract BaseEnergyStorage getEnergy();
 
-    protected void onContentsChanged() {
+    protected void onContentsChanged(int slot) {
         this.isGridChanged = true;
         this.setChangedFast();
     }
@@ -376,7 +377,7 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
             return createInventoryHandler(null);
         }
 
-        public static BaseItemStackHandler createInventoryHandler(Runnable onContentsChanged) {
+        public static BaseItemStackHandler createInventoryHandler(OnContentsChangedFunction onContentsChanged) {
             return BaseItemStackHandler.create(10, onContentsChanged, builder -> {
                 builder.setOutputSlots(9);
                 builder.setCanInsert((slot, stack) -> false);
@@ -430,7 +431,7 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
             return createInventoryHandler(null);
         }
 
-        public static BaseItemStackHandler createInventoryHandler(Runnable onContentsChanged) {
+        public static BaseItemStackHandler createInventoryHandler(OnContentsChangedFunction onContentsChanged) {
             return BaseItemStackHandler.create(26, onContentsChanged, builder -> {
                 builder.setOutputSlots(25);
                 builder.setCanInsert((slot, stack) -> false);
@@ -484,7 +485,7 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
             return createInventoryHandler(null);
         }
 
-        public static BaseItemStackHandler createInventoryHandler(Runnable onContentsChanged) {
+        public static BaseItemStackHandler createInventoryHandler(OnContentsChangedFunction onContentsChanged) {
             return BaseItemStackHandler.create(50, onContentsChanged, builder -> {
                 builder.setOutputSlots(49);
                 builder.setCanInsert((slot, stack) -> false);
@@ -538,7 +539,7 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
             return createInventoryHandler(null);
         }
 
-        public static BaseItemStackHandler createInventoryHandler(Runnable onContentsChanged) {
+        public static BaseItemStackHandler createInventoryHandler(OnContentsChangedFunction onContentsChanged) {
             return BaseItemStackHandler.create(82, onContentsChanged, builder -> {
                 builder.setOutputSlots(81);
                 builder.setCanInsert((slot, stack) -> false);

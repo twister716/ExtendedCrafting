@@ -4,6 +4,7 @@ import com.blakebr0.cucumber.energy.BaseEnergyStorage;
 import com.blakebr0.cucumber.helper.StackHelper;
 import com.blakebr0.cucumber.inventory.BaseItemStackHandler;
 import com.blakebr0.cucumber.inventory.CachedRecipe;
+import com.blakebr0.cucumber.inventory.OnContentsChangedFunction;
 import com.blakebr0.cucumber.tileentity.BaseInventoryTileEntity;
 import com.blakebr0.cucumber.util.Localizable;
 import com.blakebr0.extendedcrafting.api.crafting.ICompressorRecipe;
@@ -174,7 +175,7 @@ public class CompressorTileEntity extends BaseInventoryTileEntity implements Men
 		return createInventoryHandler(null);
 	}
 
-	public static BaseItemStackHandler createInventoryHandler(Runnable onContentsChanged) {
+	public static BaseItemStackHandler createInventoryHandler(OnContentsChangedFunction onContentsChanged) {
 		return BaseItemStackHandler.create(3, onContentsChanged, builder -> {
 			builder.setOutputSlots(0);
 			builder.setCanInsert((slot, stack) -> slot == 1);
@@ -234,7 +235,7 @@ public class CompressorTileEntity extends BaseInventoryTileEntity implements Men
 		this.recipeInventory.setStackInSlot(0, this.materialStack);
 		this.recipeInventory.setStackInSlot(1, catalyst);
 
-		return this.recipe.checkAndGet(this.recipeInventory, this.level);
+		return this.recipe.checkAndGet(this.recipeInventory.toShapelessCraftingInput(), this.level);
 	}
 
 	public int getEnergyRequired() {

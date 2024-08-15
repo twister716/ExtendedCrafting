@@ -3,6 +3,7 @@ package com.blakebr0.extendedcrafting.tileentity;
 import com.blakebr0.cucumber.helper.StackHelper;
 import com.blakebr0.cucumber.inventory.BaseItemStackHandler;
 import com.blakebr0.cucumber.inventory.CachedRecipe;
+import com.blakebr0.cucumber.inventory.OnContentsChangedFunction;
 import com.blakebr0.cucumber.tileentity.BaseInventoryTileEntity;
 import com.blakebr0.cucumber.util.Localizable;
 import com.blakebr0.extendedcrafting.api.crafting.IFluxCrafterRecipe;
@@ -135,7 +136,7 @@ public class FluxCrafterTileEntity extends BaseInventoryTileEntity implements Me
 		return createInventoryHandler(null);
 	}
 
-	public static BaseItemStackHandler createInventoryHandler(Runnable onContentsChanged) {
+	public static BaseItemStackHandler createInventoryHandler(OnContentsChangedFunction onContentsChanged) {
 		return BaseItemStackHandler.create(10, onContentsChanged, builder -> {
 			builder.setOutputSlots(9);
 			builder.setCanInsert((slot, stack) -> false);
@@ -210,7 +211,7 @@ public class FluxCrafterTileEntity extends BaseInventoryTileEntity implements Me
 		level.sendParticles(ParticleTypes.PORTAL, x, y, z, 1, 0, 0, 0, 0.1D);
 	}
 
-	private void onContentsChanged() {
+	private void onContentsChanged(int slot) {
 		this.isGridChanged = true;
 		this.setChangedFast();
 	}

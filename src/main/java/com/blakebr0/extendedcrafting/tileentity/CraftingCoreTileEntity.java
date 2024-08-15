@@ -4,6 +4,7 @@ import com.blakebr0.cucumber.energy.BaseEnergyStorage;
 import com.blakebr0.cucumber.helper.StackHelper;
 import com.blakebr0.cucumber.inventory.BaseItemStackHandler;
 import com.blakebr0.cucumber.inventory.CachedRecipe;
+import com.blakebr0.cucumber.inventory.OnContentsChangedFunction;
 import com.blakebr0.cucumber.tileentity.BaseInventoryTileEntity;
 import com.blakebr0.cucumber.util.Localizable;
 import com.blakebr0.extendedcrafting.api.crafting.ICombinationRecipe;
@@ -16,7 +17,6 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -28,7 +28,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingInput;
-import net.minecraft.world.item.crafting.RecipeInput;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -46,7 +45,7 @@ public class CraftingCoreTileEntity extends BaseInventoryTileEntity implements M
 
 	public CraftingCoreTileEntity(BlockPos pos, BlockState state) {
 		super(ModTileEntities.CRAFTING_CORE.get(), pos, state);
-		this.inventory = createInventoryHandler(this::setChangedFast);
+		this.inventory = createInventoryHandler((slot) -> this.setChangedFast());
 		this.energy = new BaseEnergyStorage(ModConfigs.CRAFTING_CORE_POWER_CAPACITY.get(), this::setChangedFast);
 		this.recipeInventory = BaseItemStackHandler.create(49);
 		this.recipe = new CachedRecipe<>(ModRecipeTypes.COMBINATION.get());
@@ -133,7 +132,7 @@ public class CraftingCoreTileEntity extends BaseInventoryTileEntity implements M
 		tile.dispatchIfChanged();
 	}
 
-	public static BaseItemStackHandler createInventoryHandler(Runnable onContentsChanged) {
+	public static BaseItemStackHandler createInventoryHandler(OnContentsChangedFunction onContentsChanged) {
 		return BaseItemStackHandler.create(1, onContentsChanged, builder -> {
 			builder.setDefaultSlotLimit(1);
 		});
@@ -156,7 +155,7 @@ public class CraftingCoreTileEntity extends BaseInventoryTileEntity implements M
 			return this.recipe.get();
 		}
 
-		return this.recipe.checkAndGet(this.recipeInventory, this.level);
+		return this.recipe.checkAndGet(this.recipeInventory.toShapelessCraftingInput(), this.level);
 	}
 
 	public boolean hasRecipe() {
