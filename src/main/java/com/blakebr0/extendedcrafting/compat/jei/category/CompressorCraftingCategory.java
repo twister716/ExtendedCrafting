@@ -22,8 +22,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.List;
-
 public class CompressorCraftingCategory implements IRecipeCategory<ICompressorRecipe> {
 	private static final ResourceLocation TEXTURE = ExtendedCrafting.resource("textures/jei/compressor.png");
 	public static final RecipeType<ICompressorRecipe> RECIPE_TYPE = RecipeType.create(ExtendedCrafting.MOD_ID, "compressor", ICompressorRecipe.class);

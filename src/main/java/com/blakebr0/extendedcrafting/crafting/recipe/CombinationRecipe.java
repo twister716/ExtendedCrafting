@@ -51,7 +51,7 @@ public class CombinationRecipe implements ICombinationRecipe {
 
 		var inputs = NonNullList.<ItemStack>create();
 
-		for (var i = 0; i < inventory.size(); i++) {
+		for (var i = 1; i < inventory.size(); i++) {
 			var item = inventory.getItem(i);
 			if (!item.isEmpty()) {
 				inputs.add(item);

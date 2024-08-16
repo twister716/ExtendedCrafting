@@ -4,7 +4,6 @@ import com.blakebr0.extendedcrafting.ExtendedCrafting;
 import com.blakebr0.extendedcrafting.tileentity.AutoEnderCrafterTileEntity;
 import com.blakebr0.extendedcrafting.tileentity.AutoFluxCrafterTileEntity;
 import com.blakebr0.extendedcrafting.tileentity.AutoTableTileEntity;
-import com.blakebr0.extendedcrafting.tileentity.CompressorTileEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;

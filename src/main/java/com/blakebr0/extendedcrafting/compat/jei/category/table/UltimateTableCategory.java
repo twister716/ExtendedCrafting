@@ -25,8 +25,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.List;
-
 public class UltimateTableCategory implements IRecipeCategory<ITableRecipe> {
 	private static final ResourceLocation TEXTURE = ExtendedCrafting.resource("textures/jei/ultimate_crafting.png");
 	public static final RecipeType<ITableRecipe> RECIPE_TYPE = RecipeType.create(ExtendedCrafting.MOD_ID, "ultimate_crafting", ITableRecipe.class);

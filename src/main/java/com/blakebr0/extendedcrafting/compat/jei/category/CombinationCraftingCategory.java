@@ -21,7 +21,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
 import java.awt.*;
-import java.util.List;
 
 public class CombinationCraftingCategory implements IRecipeCategory<ICombinationRecipe> {
 	private static final ResourceLocation TEXTURE = ExtendedCrafting.resource("textures/jei/combination_crafting.png");
