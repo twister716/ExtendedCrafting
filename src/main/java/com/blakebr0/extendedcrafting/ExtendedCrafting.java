@@ -16,6 +16,7 @@ import com.blakebr0.extendedcrafting.init.ModRecipeSerializers;
 import com.blakebr0.extendedcrafting.init.ModRecipeTypes;
 import com.blakebr0.extendedcrafting.init.ModReloadListeners;
 import com.blakebr0.extendedcrafting.init.ModTileEntities;
+import com.blakebr0.extendedcrafting.network.NetworkHandler;
 import com.blakebr0.extendedcrafting.singularity.SingularityRegistry;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
@@ -48,6 +49,8 @@ public final class ExtendedCrafting {
 		ModMenuTypes.REGISTRY.register(bus);
 		ModRecipeTypes.REGISTRY.register(bus);
 		ModRecipeSerializers.REGISTRY.register(bus);
+
+		bus.register(new NetworkHandler());
 
 		if (FMLEnvironment.dist == Dist.CLIENT) {
 			bus.register(new ColorHandler());
