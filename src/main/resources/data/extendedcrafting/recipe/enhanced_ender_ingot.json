@@ -14,7 +14,7 @@
     }
   },
   "result": {
-    "item": "extendedcrafting:enhanced_ender_ingot",
+    "id": "extendedcrafting:enhanced_ender_ingot",
     "count": 4
   }
 }

@@ -1,6 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
-  "conditions": [
+  "neoforge:conditions": [
     {
       "type": "cucumber:feature_flag",
       "flag": "extendedcrafting:crafting_core"
@@ -20,7 +20,7 @@
     }
   },
   "result": {
-    "item": "extendedcrafting:pedestal",
+    "id": "extendedcrafting:pedestal",
     "count": 2
   }
 }

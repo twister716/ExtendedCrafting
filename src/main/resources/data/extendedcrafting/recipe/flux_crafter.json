@@ -1,6 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
-  "conditions": [
+  "neoforge:conditions": [
     {
       "type": "cucumber:feature_flag",
       "flag": "extendedcrafting:flux_crafter"
@@ -13,7 +13,7 @@
   ],
   "key": {
     "E": {
-      "tag": "forge:ingots/gold"
+      "tag": "c:ingots/gold"
     },
     "I": {
       "item": "extendedcrafting:redstone_ingot"
@@ -23,6 +23,6 @@
     }
   },
   "result": {
-    "item": "extendedcrafting:flux_crafter"
+    "id": "extendedcrafting:flux_crafter"
   }
 }

@@ -1,6 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
-  "conditions": [
+  "neoforge:conditions": [
     {
       "type": "cucumber:feature_flag",
       "flag": "extendedcrafting:tables"
@@ -30,6 +30,6 @@
     }
   },
   "result": {
-    "item": "extendedcrafting:advanced_auto_table"
+    "id": "extendedcrafting:advanced_auto_table"
   }
 }

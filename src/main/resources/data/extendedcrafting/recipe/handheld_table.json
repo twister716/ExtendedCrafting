@@ -1,6 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
-  "conditions": [
+  "neoforge:conditions": [
     {
       "type": "cucumber:feature_flag",
       "flag": "extendedcrafting:handheld_workbench"
@@ -15,10 +15,10 @@
       "item": "minecraft:crafting_table"
     },
     "S": {
-      "tag": "forge:rods/wooden"
+      "tag": "c:rods/wooden"
     }
   },
   "result": {
-    "item": "extendedcrafting:handheld_table"
+    "id": "extendedcrafting:handheld_table"
   }
 }

@@ -1,6 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
-  "conditions": [
+  "neoforge:conditions": [
     {
       "type": "cucumber:feature_flag",
       "flag": "extendedcrafting:tables"
@@ -17,7 +17,7 @@
   ],
   "key": {
     "I": {
-      "tag": "forge:storage_blocks/gold"
+      "tag": "c:storage_blocks/gold"
     },
     "C": [
       {
@@ -38,6 +38,6 @@
     }
   },
   "result": {
-    "item": "extendedcrafting:advanced_table"
+    "id": "extendedcrafting:advanced_table"
   }
 }

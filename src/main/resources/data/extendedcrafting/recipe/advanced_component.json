@@ -8,13 +8,13 @@
       "item": "extendedcrafting:luminessence"
     },
     {
-      "tag": "forge:ingots/gold"
+      "tag": "c:ingots/gold"
     },
     {
-      "tag": "forge:ingots/gold"
+      "tag": "c:ingots/gold"
     }
   ],
   "result": {
-    "item": "extendedcrafting:advanced_component"
+    "id": "extendedcrafting:advanced_component"
   }
 }

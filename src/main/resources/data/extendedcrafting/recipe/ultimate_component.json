@@ -8,13 +8,13 @@
       "item": "extendedcrafting:luminessence"
     },
     {
-      "tag": "forge:gems/emerald"
+      "tag": "c:gems/emerald"
     },
     {
-      "tag": "forge:gems/emerald"
+      "tag": "c:gems/emerald"
     }
   ],
   "result": {
-    "item": "extendedcrafting:ultimate_component"
+    "id": "extendedcrafting:ultimate_component"
   }
 }

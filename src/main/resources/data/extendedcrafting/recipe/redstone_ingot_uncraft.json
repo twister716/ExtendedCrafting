@@ -6,7 +6,7 @@
     }
   ],
   "result": {
-    "item": "extendedcrafting:redstone_nugget",
+    "id": "extendedcrafting:redstone_nugget",
     "count": 9
   }
 }

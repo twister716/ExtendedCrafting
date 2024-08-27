@@ -8,13 +8,13 @@
       "item": "extendedcrafting:luminessence"
     },
     {
-      "tag": "forge:gems/diamond"
+      "tag": "c:gems/diamond"
     },
     {
-      "tag": "forge:gems/diamond"
+      "tag": "c:gems/diamond"
     }
   ],
   "result": {
-    "item": "extendedcrafting:elite_component"
+    "id": "extendedcrafting:elite_component"
   }
 }

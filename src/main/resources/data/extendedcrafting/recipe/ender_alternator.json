@@ -1,6 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
-  "conditions": [
+  "neoforge:conditions": [
     {
       "type": "cucumber:feature_flag",
       "flag": "extendedcrafting:ender_crafter"
@@ -20,7 +20,7 @@
     }
   },
   "result": {
-    "item": "extendedcrafting:ender_alternator",
+    "id": "extendedcrafting:ender_alternator",
     "count": 2
   }
 }

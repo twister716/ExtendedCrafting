@@ -1,6 +1,6 @@
 {
   "type": "extendedcrafting:ultimate_singularity",
-  "conditions": [
+  "neoforge:conditions": [
     {
       "type": "cucumber:feature_flag",
       "flag": "extendedcrafting:ultimate_singularity_recipe"

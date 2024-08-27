@@ -6,7 +6,7 @@
     }
   ],
   "result": {
-    "item": "extendedcrafting:ender_ingot",
+    "id": "extendedcrafting:ender_ingot",
     "count": 9
   }
 }

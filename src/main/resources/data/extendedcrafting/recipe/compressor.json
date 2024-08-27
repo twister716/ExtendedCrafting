@@ -1,6 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
-  "conditions": [
+  "neoforge:conditions": [
     {
       "type": "cucumber:feature_flag",
       "flag": "extendedcrafting:compressor"
@@ -29,6 +29,6 @@
     }
   },
   "result": {
-    "item": "extendedcrafting:compressor"
+    "id": "extendedcrafting:compressor"
   }
 }

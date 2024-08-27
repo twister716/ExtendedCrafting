@@ -1,16 +1,16 @@
 {
   "replace": false,
   "values": [
-    "#forge:storage_blocks/black_iron",
-    "#forge:storage_blocks/crystaltine",
-    "#forge:storage_blocks/ender_ingot",
-    "#forge:storage_blocks/ender_star",
-    "#forge:storage_blocks/enhanced_ender_ingot",
-    "#forge:storage_blocks/enhanced_redstone_ingot",
-    "#forge:storage_blocks/flux_star",
-    "#forge:storage_blocks/luminessence",
-    "#forge:storage_blocks/nether_star",
-    "#forge:storage_blocks/redstone_ingot",
-    "#forge:storage_blocks/the_ultimate"
+    "#c:storage_blocks/black_iron",
+    "#c:storage_blocks/crystaltine",
+    "#c:storage_blocks/ender_ingot",
+    "#c:storage_blocks/ender_star",
+    "#c:storage_blocks/enhanced_ender_ingot",
+    "#c:storage_blocks/enhanced_redstone_ingot",
+    "#c:storage_blocks/flux_star",
+    "#c:storage_blocks/luminessence",
+    "#c:storage_blocks/nether_star",
+    "#c:storage_blocks/redstone_ingot",
+    "#c:storage_blocks/the_ultimate"
   ]
 }

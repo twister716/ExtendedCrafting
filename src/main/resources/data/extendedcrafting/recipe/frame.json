@@ -10,13 +10,13 @@
       "item": "extendedcrafting:black_iron_ingot"
     },
     "G": {
-      "tag": "forge:glass/colorless"
+      "tag": "c:glass_blocks/colorless"
     },
     "S": {
       "item": "extendedcrafting:black_iron_slate"
     }
   },
   "result": {
-    "item": "extendedcrafting:frame"
+    "id": "extendedcrafting:frame"
   }
 }

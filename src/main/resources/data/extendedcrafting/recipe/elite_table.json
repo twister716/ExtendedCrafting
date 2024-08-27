@@ -1,6 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
-  "conditions": [
+  "neoforge:conditions": [
     {
       "type": "cucumber:feature_flag",
       "flag": "extendedcrafting:tables"
@@ -13,7 +13,7 @@
   ],
   "key": {
     "I": {
-      "tag": "forge:storage_blocks/diamond"
+      "tag": "c:storage_blocks/diamond"
     },
     "C": [
       {
@@ -34,6 +34,6 @@
     }
   },
   "result": {
-    "item": "extendedcrafting:elite_table"
+    "id": "extendedcrafting:elite_table"
   }
 }

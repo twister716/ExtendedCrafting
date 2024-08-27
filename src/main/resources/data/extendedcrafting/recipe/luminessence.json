@@ -2,20 +2,20 @@
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
     {
-      "tag": "forge:dusts/glowstone"
+      "tag": "c:dusts/glowstone"
     },
     {
-      "tag": "forge:dusts/glowstone"
+      "tag": "c:dusts/glowstone"
     },
     {
-      "tag": "forge:dusts/redstone"
+      "tag": "c:dusts/redstone"
     },
     {
-      "tag": "forge:gunpowder"
+      "item": "minecraft:gunpowder"
     }
   ],
   "result": {
-    "item": "extendedcrafting:luminessence",
+    "id": "extendedcrafting:luminessence",
     "count": 2
   }
 }

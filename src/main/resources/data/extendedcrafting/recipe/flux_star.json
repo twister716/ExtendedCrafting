@@ -1,6 +1,6 @@
 {
   "type": "extendedcrafting:shaped_flux_crafter",
-  "powerRequired": 400000,
+  "power_required": 400000,
   "pattern": [
     " E ",
     "ESE",
@@ -11,10 +11,10 @@
       "item": "minecraft:nether_star"
     },
     "E": {
-      "tag": "forge:ingots/gold"
+      "tag": "c:ingots/gold"
     }
   },
   "result": {
-    "item": "extendedcrafting:flux_star"
+    "id": "extendedcrafting:flux_star"
   }
 }
