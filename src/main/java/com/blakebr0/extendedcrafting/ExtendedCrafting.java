@@ -6,6 +6,7 @@ import com.blakebr0.extendedcrafting.client.ModTESRs;
 import com.blakebr0.extendedcrafting.client.handler.ColorHandler;
 import com.blakebr0.extendedcrafting.config.ModConfigs;
 import com.blakebr0.extendedcrafting.crafting.DynamicRecipeManager;
+import com.blakebr0.extendedcrafting.handler.RegisterCapabilityHandler;
 import com.blakebr0.extendedcrafting.init.ModBlocks;
 import com.blakebr0.extendedcrafting.init.ModCreativeModeTabs;
 import com.blakebr0.extendedcrafting.init.ModDataComponentTypes;
@@ -51,6 +52,7 @@ public final class ExtendedCrafting {
 		ModRecipeSerializers.REGISTRY.register(bus);
 
 		bus.register(new NetworkHandler());
+		bus.register(new RegisterCapabilityHandler());
 
 		if (FMLEnvironment.dist == Dist.CLIENT) {
 			bus.register(new ColorHandler());
