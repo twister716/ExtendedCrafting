@@ -41,7 +41,7 @@ public class SingularityItem extends BaseItem implements IColored {
 				tooltip.add(ModTooltips.getAddedByTooltip(modid));
 
 			if (flag.isAdvanced())
-				tooltip.add(ModTooltips.SINGULARITY_ID.args(singularity.getId()).color(ChatFormatting.DARK_GRAY).build());
+				tooltip.add(ModTooltips.SINGULARITY_ID.args(singularity.getId().toString()).color(ChatFormatting.DARK_GRAY).build());
 		}
 	}
 
