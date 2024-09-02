@@ -66,6 +66,11 @@ public class ShapelessFluxCrafterRecipe implements IFluxCrafterRecipe {
 	}
 
 	@Override
+	public NonNullList<Ingredient> getIngredients() {
+		return this.inputs;
+	}
+
+	@Override
 	public RecipeSerializer<?> getSerializer() {
 		return ModRecipeSerializers.SHAPELESS_FLUX_CRAFTER.get();
 	}

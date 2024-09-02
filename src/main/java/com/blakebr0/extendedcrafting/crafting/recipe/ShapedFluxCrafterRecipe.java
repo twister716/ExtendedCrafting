@@ -1,5 +1,6 @@
 package com.blakebr0.extendedcrafting.crafting.recipe;
 
+import com.blakebr0.cucumber.crafting.ShapedRecipePatternCodecs;
 import com.blakebr0.extendedcrafting.api.crafting.IFluxCrafterRecipe;
 import com.blakebr0.extendedcrafting.config.ModConfigs;
 import com.blakebr0.extendedcrafting.init.ModRecipeSerializers;
@@ -8,10 +9,12 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.ShapedRecipePattern;
@@ -51,6 +54,11 @@ public class ShapedFluxCrafterRecipe implements IFluxCrafterRecipe {
 	}
 
 	@Override
+	public NonNullList<Ingredient> getIngredients() {
+		return this.pattern.ingredients();
+	}
+
+	@Override
 	public RecipeSerializer<?> getSerializer() {
 		return ModRecipeSerializers.SHAPED_FLUX_CRAFTER.get();
 	}
@@ -81,7 +89,7 @@ public class ShapedFluxCrafterRecipe implements IFluxCrafterRecipe {
 	public static class Serializer implements RecipeSerializer<ShapedFluxCrafterRecipe> {
 		public static final MapCodec<ShapedFluxCrafterRecipe> CODEC = RecordCodecBuilder.mapCodec(builder ->
 				builder.group(
-						ShapedRecipePattern.MAP_CODEC.forGetter(recipe -> recipe.pattern),
+						ShapedRecipePatternCodecs.MAP_CODEC.forGetter(recipe -> recipe.pattern),
 						ItemStack.STRICT_CODEC.fieldOf("result").forGetter(recipe -> recipe.result),
 						Codec.INT.fieldOf("power_required").forGetter(recipe -> recipe.powerRequired),
 						Codec.INT.optionalFieldOf("power_rate", ModConfigs.FLUX_CRAFTER_POWER_RATE.get()).forGetter(recipe -> recipe.powerRate)
