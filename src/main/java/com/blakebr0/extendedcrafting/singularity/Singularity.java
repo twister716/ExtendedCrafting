@@ -7,7 +7,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.util.FastColor;
 import net.minecraft.world.item.crafting.Ingredient;
+
+import java.util.Arrays;
 
 public class Singularity {
     public static final StreamCodec<RegistryFriendlyByteBuf, Singularity> STREAM_CODEC = StreamCodec.of(
@@ -26,7 +29,7 @@ public class Singularity {
     public Singularity(ResourceLocation id, String name, int[] colors, Ingredient ingredient, int ingredientCount, boolean inUltimateSingularity) {
         this.id = id;
         this.name = name;
-        this.colors = colors;
+        this.colors = Arrays.stream(colors).map(c -> FastColor.ARGB32.color(255, c)).toArray();
         this.ingredient = ingredient;
         this.tag = null;
         this.ingredientCount = ingredientCount;
@@ -40,7 +43,7 @@ public class Singularity {
     public Singularity(ResourceLocation id, String name, int[] colors, String tag, int ingredientCount, boolean inUltimateSingularity) {
         this.id = id;
         this.name = name;
-        this.colors = colors;
+        this.colors = Arrays.stream(colors).map(c -> FastColor.ARGB32.color(255, c)).toArray();
         this.ingredient = Ingredient.EMPTY;
         this.tag = tag;
         this.ingredientCount = ingredientCount;
