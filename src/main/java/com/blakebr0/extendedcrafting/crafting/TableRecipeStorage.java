@@ -7,11 +7,9 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingInput;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.level.Level;
 
 import java.util.Arrays;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 
 public class TableRecipeStorage {
@@ -63,11 +61,11 @@ public class TableRecipeStorage {
         return IntStream.range(0, this.recipes.length).anyMatch(this::hasRecipe);
     }
 
-    public void setRecipe(int index, CraftingInput inventory, ItemStack output) {
+    public void setRecipe(int index, BaseItemStackHandler inventory, ItemStack output) {
         var recipe = BaseItemStackHandler.create(this.slots);
 
         for (int i = 0; i < this.slots - 1; i++) {
-            recipe.setStackInSlot(i, inventory.getItem(i).copy());
+            recipe.setStackInSlot(i, inventory.getStackInSlot(i).copy());
         }
 
         recipe.setStackInSlot(this.slots - 1, output);
@@ -132,19 +130,18 @@ public class TableRecipeStorage {
         this.updateSelectedRecipeGrid();
     }
 
-    public void onLoad(Level level, RecipeType<? extends Recipe<CraftingInput>> type) {
+    public void validate(Function<CraftingInput, ItemStack> validator) {
         for (int i = 0; i < this.recipes.length; i++) {
             if (this.hasRecipe(i)) {
                 var recipe = this.recipes[i];
                 var grid = this.createRecipeGrid(recipe);
-                var inventory = CraftingInput.of(3, 3, grid.getStacks());
-                var result = level.getRecipeManager().getRecipeFor(type, inventory, level)
-                        .map(r -> r.value().assemble(inventory, level.registryAccess()))
-                        .orElse(ItemStack.EMPTY);
+                var size = (int) Math.sqrt(recipe.getSlots());
+                var inventory = CraftingInput.of(size, size, grid.getStacks());
 
-                recipe.setStackInSlot(this.slots - 1, result);
+                recipe.setStackInSlot(this.slots - 1, validator.apply(inventory));
             }
         }
+
     }
 
     private void updateSelectedRecipeGrid() {

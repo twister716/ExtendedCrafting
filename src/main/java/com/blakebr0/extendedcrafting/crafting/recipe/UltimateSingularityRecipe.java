@@ -1,5 +1,6 @@
 package com.blakebr0.extendedcrafting.crafting.recipe;
 
+import com.blakebr0.extendedcrafting.api.TableCraftingInput;
 import com.blakebr0.extendedcrafting.init.ModItems;
 import com.blakebr0.extendedcrafting.init.ModRecipeSerializers;
 import com.blakebr0.extendedcrafting.singularity.SingularityRegistry;
@@ -9,7 +10,6 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
@@ -22,7 +22,7 @@ public class UltimateSingularityRecipe extends ShapelessTableRecipe {
     }
 
     @Override
-    public boolean matches(CraftingInput inventory, Level level) {
+    public boolean matches(TableCraftingInput inventory, Level level) {
         // ensure ingredients list is initialized
         var ingredients = this.getIngredients();
 

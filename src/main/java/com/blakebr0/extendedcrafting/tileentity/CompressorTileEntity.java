@@ -72,7 +72,7 @@ public class CompressorTileEntity extends BaseInventoryTileEntity implements Men
 	public void saveAdditional(CompoundTag tag, HolderLookup.Provider lookup) {
 		super.saveAdditional(tag, lookup);
 		tag.putInt("MaterialCount", this.materialCount);
-		tag.put("MaterialStack", this.materialStack.save(lookup));
+		tag.put("MaterialStack", this.materialStack.saveOptional(lookup));
 		tag.putInt("Progress", this.progress);
 		tag.putBoolean("Ejecting", this.ejecting);
 		tag.putInt("Energy", this.energy.getEnergyStored());
@@ -114,7 +114,7 @@ public class CompressorTileEntity extends BaseInventoryTileEntity implements Men
 		if (recipe != null && tile.getEnergy().getEnergyStored() > 0) {
 			if (tile.materialCount >= recipe.getCount(0)) {
 				if (tile.progress >= recipe.getPowerCost()) {
-					var result = recipe.assemble(tile.recipeInventory.toCraftingInput(3, 3), level.registryAccess());
+					var result = recipe.assemble(tile.toCraftingInput(), level.registryAccess());
 
 					if (StackHelper.canCombineStacks(result, output)) {
 						tile.updateResult(result);
@@ -235,7 +235,7 @@ public class CompressorTileEntity extends BaseInventoryTileEntity implements Men
 		this.recipeInventory.setStackInSlot(0, this.materialStack);
 		this.recipeInventory.setStackInSlot(1, catalyst);
 
-		return this.recipe.checkAndGet(this.recipeInventory.toShapelessCraftingInput(), this.level);
+		return this.recipe.checkAndGet(this.toCraftingInput(), this.level);
 	}
 
 	public int getEnergyRequired() {
@@ -335,6 +335,10 @@ public class CompressorTileEntity extends BaseInventoryTileEntity implements Men
 				this.inputs.remove(i);
 			}
 		}
+	}
+
+	private CraftingInput toCraftingInput() {
+		return this.recipeInventory.toShapelessCraftingInput();
 	}
 
 	private static List<MaterialInput> loadMaterialInputs(HolderLookup.Provider lookup, CompoundTag tag) {

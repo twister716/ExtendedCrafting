@@ -7,6 +7,7 @@ import com.blakebr0.cucumber.inventory.CachedRecipe;
 import com.blakebr0.cucumber.inventory.OnContentsChangedFunction;
 import com.blakebr0.cucumber.tileentity.BaseInventoryTileEntity;
 import com.blakebr0.cucumber.util.Localizable;
+import com.blakebr0.cucumber.util.Utils;
 import com.blakebr0.extendedcrafting.api.crafting.ICombinationRecipe;
 import com.blakebr0.extendedcrafting.config.ModConfigs;
 import com.blakebr0.extendedcrafting.container.CraftingCoreContainer;
@@ -102,11 +103,11 @@ public class CraftingCoreTileEntity extends BaseInventoryTileEntity implements M
 					}
 
 					tile.spawnParticles(ParticleTypes.END_ROD, pos, 1.1, 50);
-					tile.inventory.setStackInSlot(0, recipe.assemble(tile.recipeInventory.toCraftingInput(7, 7), level.registryAccess()));
+					tile.inventory.setStackInSlot(0, recipe.assemble(tile.toCraftingInput(), level.registryAccess()));
 					tile.progress = 0;
 					tile.setChangedFast();
 				} else {
-					tile.spawnParticles(ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, FastColor.ARGB32.color(255, 0, 0)), pos, 1.15, 2);
+					tile.spawnParticles(ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, FastColor.ARGB32.color(Utils.randInt(0, 255), Utils.randInt(0, 255), Utils.randInt(0, 255))), pos, 1.15, 2);
 
 					if (tile.shouldSpawnItemParticles()) {
 						for (var pedestalPos : pedestalsWithItems.keySet()) {
@@ -155,7 +156,7 @@ public class CraftingCoreTileEntity extends BaseInventoryTileEntity implements M
 			return this.recipe.get();
 		}
 
-		return this.recipe.checkAndGet(this.recipeInventory.toShapelessCraftingInput(), this.level);
+		return this.recipe.checkAndGet(this.toCraftingInput(), this.level);
 	}
 
 	public boolean hasRecipe() {
@@ -283,5 +284,9 @@ public class CraftingCoreTileEntity extends BaseInventoryTileEntity implements M
 		int endingPower = powerRate * 40;
 
 		return this.progress > (powerCost - endingPower);
+	}
+
+	private CraftingInput toCraftingInput() {
+		return this.recipeInventory.toShapelessCraftingInput();
 	}
 }

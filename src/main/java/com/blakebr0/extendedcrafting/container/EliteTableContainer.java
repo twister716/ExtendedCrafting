@@ -12,7 +12,6 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.ResultContainer;
 import net.minecraft.world.inventory.Slot;
@@ -22,7 +21,7 @@ import net.minecraft.world.level.Level;
 public class EliteTableContainer extends BaseContainerMenu {
 	private final Level level;
 	private final Container result;
-	private final CraftingContainer matrix;
+	private final ExtendedCraftingInventory matrix;
 
 	private EliteTableContainer(MenuType<?> type, int id, Inventory playerInventory, FriendlyByteBuf buffer) {
 		this(type, id, playerInventory, EliteTableTileEntity.createInventoryHandler(), buffer.readBlockPos());

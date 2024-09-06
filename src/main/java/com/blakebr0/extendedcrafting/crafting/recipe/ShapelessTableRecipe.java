@@ -1,5 +1,6 @@
 package com.blakebr0.extendedcrafting.crafting.recipe;
 
+import com.blakebr0.extendedcrafting.api.TableCraftingInput;
 import com.blakebr0.extendedcrafting.api.crafting.ITableRecipe;
 import com.blakebr0.extendedcrafting.init.ModRecipeSerializers;
 import com.blakebr0.extendedcrafting.init.ModRecipeTypes;
@@ -12,11 +13,11 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.common.util.RecipeMatcher;
 
 import java.util.function.BiFunction;
 
@@ -33,12 +34,27 @@ public class ShapelessTableRecipe implements ITableRecipe {
 	}
 
 	@Override
-	public boolean matches(CraftingInput inventory, Level level) {
-		return false;
+	public boolean matches(TableCraftingInput inventory, Level level) {
+		if (this.tier != 0 && this.tier != inventory.tier())
+			return false;
+
+		if (this.inputs.size() != inventory.ingredientCount())
+			return false;
+
+		var inputs = NonNullList.<ItemStack>create();
+
+		for (var i = 0; i < inventory.size(); i++) {
+			var item = inventory.getItem(i);
+			if (!item.isEmpty()) {
+				inputs.add(item);
+			}
+		}
+
+		return RecipeMatcher.findMatches(inputs, this.inputs) != null;
 	}
 
 	@Override
-	public ItemStack assemble(CraftingInput inventory, HolderLookup.Provider provider) {
+	public ItemStack assemble(TableCraftingInput inventory, HolderLookup.Provider provider) {
 		return this.result.copy();
 	}
 
@@ -68,7 +84,7 @@ public class ShapelessTableRecipe implements ITableRecipe {
 	}
 
 	@Override
-	public NonNullList<ItemStack> getRemainingItems(CraftingInput inventory) {
+	public NonNullList<ItemStack> getRemainingItems(TableCraftingInput inventory) {
 		var remaining = NonNullList.withSize(inventory.size(), ItemStack.EMPTY);
 
 		for (int i = 0; i < remaining.size(); ++i) {

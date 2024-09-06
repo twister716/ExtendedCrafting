@@ -40,10 +40,13 @@ public class CompressorRecipe implements ICompressorRecipe {
 
 	@Override
 	public boolean matches(CraftingInput inventory, Level level) {
+		if (inventory.ingredientCount() != 2)
+			return false;
+
 		var input = inventory.getItem(0);
 		var catalyst = inventory.getItem(1);
 
-		return this.inputs.getFirst().test(input) && this.catalyst.test(catalyst);
+		return this.inputs.getFirst().getItems().anyMatch(s -> s.is(input.getItem())) && this.catalyst.test(catalyst);
 	}
 
 	@Override

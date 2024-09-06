@@ -41,12 +41,12 @@ public class CombinationRecipe implements ICombinationRecipe {
 
 	@Override
 	public boolean matches(CraftingInput inventory, Level level) {
-		var input = inventory.getItem(0);
-		if (!this.input.test(input))
-			return false;
-
 		// -1 ingredient for the input item
 		if (this.inputs.size() != inventory.ingredientCount() - 1)
+			return false;
+
+		var input = inventory.getItem(0);
+		if (!this.input.test(input))
 			return false;
 
 		var inputs = NonNullList.<ItemStack>create();
@@ -114,7 +114,7 @@ public class CombinationRecipe implements ICombinationRecipe {
 	public static class Serializer implements RecipeSerializer<CombinationRecipe> {
 		public static final MapCodec<CombinationRecipe> CODEC = RecordCodecBuilder.mapCodec(builder ->
 				builder.group(
-						Ingredient.CODEC_NONEMPTY.fieldOf("result").forGetter(recipe -> recipe.input),
+						Ingredient.CODEC_NONEMPTY.fieldOf("input").forGetter(recipe -> recipe.input),
 						Ingredient.CODEC_NONEMPTY
 								.listOf()
 								.fieldOf("ingredients")

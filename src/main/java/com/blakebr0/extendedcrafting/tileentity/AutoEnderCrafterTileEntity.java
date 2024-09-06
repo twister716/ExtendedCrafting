@@ -53,7 +53,11 @@ public class AutoEnderCrafterTileEntity extends EnderCrafterTileEntity implement
 
         // on load, we will re-validate the recipe outputs to ensure they are still correct
         if (this.level != null && !this.level.isClientSide()) {
-            this.getRecipeStorage().onLoad(this.level, ModRecipeTypes.ENDER_CRAFTER.get());
+            this.getRecipeStorage().validate(inventory -> this.level.getRecipeManager()
+                    .getRecipeFor(ModRecipeTypes.ENDER_CRAFTER.get(), inventory, this.level)
+                    .map(r -> r.value().assemble(inventory, this.level.registryAccess()))
+                    .orElse(ItemStack.EMPTY)
+            );
         }
     }
 
@@ -114,7 +118,7 @@ public class AutoEnderCrafterTileEntity extends EnderCrafterTileEntity implement
             result = recipe.value().assemble(inventory, level.registryAccess());
         }
 
-        this.getRecipeStorage().setRecipe(index, inventory, result);
+        this.getRecipeStorage().setRecipe(index, this.getInventory(), result);
         this.setChangedAndDispatch();
     }
 
