@@ -13,10 +13,10 @@
   ],
   "key": {
     "X": {
-      "tag": "forge:ingots/gold"
+      "tag": "c:ingots/gold"
     }
   },
   "result": {
-    "item": "minecraft:apple"
+    "id": "minecraft:apple"
   }
 }

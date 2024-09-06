@@ -1,7 +1,6 @@
-
 {
   "type": "extendedcrafting:shaped_flux_crafter",
-  "powerRequired": 100000,
+  "power_required": 100000,
   "pattern": [
     "XXX",
     "X X",
@@ -9,10 +8,10 @@
   ],
   "key": {
     "X": {
-      "tag": "forge:ingots/gold"
+      "tag": "c:ingots/gold"
     }
   },
   "result": {
-    "item": "minecraft:apple"
+    "id": "minecraft:apple"
   }
 }

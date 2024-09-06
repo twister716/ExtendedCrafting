@@ -1,7 +1,6 @@
-
 {
-  "type": "extendedcrafting:shapeless_flux_crafter",
-  "powerRequired": 2000000,
+  "type": "extendedcrafting:shapeless_table",
+  "tier": 3,
   "ingredients": [
     {
       "item": "minecraft:coal"
@@ -11,6 +10,6 @@
     }
   ],
   "result": {
-    "item": "minecraft:string"
+    "id": "minecraft:apple"
   }
 }

@@ -1,12 +1,15 @@
 {
   "type": "extendedcrafting:combination",
-  "powerCost": 400000,
+  "power_cost": 400000,
   "input": {
-    "type": "forge:nbt",
-    "item": "extendedcrafting:recipe_maker",
-    "nbt": {
-      "Shapeless": true,
-      "Type": "Datapack"
+    "type": "neoforge:components",
+    "items": ["extendedcrafting:recipe_maker"],
+    "strict": false,
+    "components": {
+      "extendedcrafting:recipe_maker": {
+        "type": "Datapack",
+        "shapeless": true
+      }
     }
   },
   "ingredients": [
@@ -36,6 +39,6 @@
     }
   ],
   "result": {
-    "item": "minecraft:stone"
+    "id": "minecraft:stone"
   }
 }

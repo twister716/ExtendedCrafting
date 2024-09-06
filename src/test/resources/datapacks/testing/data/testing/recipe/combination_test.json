@@ -1,6 +1,6 @@
 {
   "type": "extendedcrafting:combination",
-  "powerCost": 400000,
+  "power_cost": 400000,
   "input": {
     "item": "minecraft:iron_ingot"
   },
@@ -31,6 +31,6 @@
     }
   ],
   "result": {
-    "item": "minecraft:stone"
+    "id": "minecraft:stone"
   }
 }
