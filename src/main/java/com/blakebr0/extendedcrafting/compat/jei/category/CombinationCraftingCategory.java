@@ -75,16 +75,16 @@ public class CombinationCraftingCategory implements IRecipeCategory<ICombination
 		var inputs = recipe.getIngredients();
 		var output = recipe.getResultItem(level.registryAccess());
 
-		builder.addSlot(RecipeIngredientRole.INPUT, 77, 47).addIngredients(inputs.getFirst());
+		builder.addSlot(RecipeIngredientRole.INPUT, 77, 47).addIngredients(recipe.getInput());
 
-		double angleBetweenEach = 360.0 / (inputs.size() - 1);
+		double angleBetweenEach = 360.0 / inputs.size();
 		Point point = new Point(53, 8), center = new Point(74, 47);
 
-		for (int i = 1; i < inputs.size(); i++) {
-			builder.addSlot(RecipeIngredientRole.INPUT, point.x, point.y).addIngredients(inputs.get(i));
+        for (var input : inputs) {
+            builder.addSlot(RecipeIngredientRole.INPUT, point.x, point.y).addIngredients(input);
 
-			point = rotatePoint(point, center, angleBetweenEach);
-		}
+            point = rotatePoint(point, center, angleBetweenEach);
+        }
 
 		builder.addSlot(RecipeIngredientRole.OUTPUT, 77, 150).addItemStack(output);
 	}
