@@ -59,6 +59,8 @@ public final class SingularityRegistry {
         if (!dir.mkdirs() && dir.isDirectory()) {
             this.loadFiles(dir);
         }
+        
+        UltimateSingularityRecipe.invalidate();
 
         stopwatch.stop();
 
