@@ -6,6 +6,7 @@ import com.blakebr0.extendedcrafting.init.ModRecipeSerializers;
 import com.blakebr0.extendedcrafting.singularity.SingularityRegistry;
 import com.blakebr0.extendedcrafting.singularity.SingularityUtils;
 import com.mojang.serialization.MapCodec;
+import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -13,9 +14,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.common.crafting.DataComponentIngredient;
 
 public class UltimateSingularityRecipe extends ShapelessTableRecipe {
-    private static boolean ingredientsLoaded = false;
+    private static final Object2BooleanOpenHashMap<UltimateSingularityRecipe> INGREDIENTS_LOADED = new Object2BooleanOpenHashMap<>();
 
     public UltimateSingularityRecipe(ItemStack output) {
         super(NonNullList.create(), output, 4);
@@ -32,7 +34,7 @@ public class UltimateSingularityRecipe extends ShapelessTableRecipe {
 
     @Override
     public NonNullList<Ingredient> getIngredients() {
-        if (!ingredientsLoaded) {
+        if (!INGREDIENTS_LOADED.getOrDefault(this, false)) {
             super.getIngredients().clear();
 
             SingularityRegistry.getInstance().getSingularities()
@@ -40,10 +42,10 @@ public class UltimateSingularityRecipe extends ShapelessTableRecipe {
                     .filter(singularity -> singularity.isInUltimateSingularity() && singularity.getIngredient() != Ingredient.EMPTY)
                     .limit(81)
                     .map(SingularityUtils::getItemForSingularity)
-                    .map(Ingredient::of)
+                    .map(stack -> DataComponentIngredient.of(false, stack.getComponentsPatch().split().added(), stack.getItem()))
                     .forEach(super.getIngredients()::add);
 
-            ingredientsLoaded = true;
+            INGREDIENTS_LOADED.put(this, true);
         }
 
         return super.getIngredients();
@@ -55,7 +57,7 @@ public class UltimateSingularityRecipe extends ShapelessTableRecipe {
     }
 
     public static void invalidate() {
-        ingredientsLoaded = false;
+        INGREDIENTS_LOADED.clear();
     }
 
     public static class Serializer implements RecipeSerializer<UltimateSingularityRecipe> {

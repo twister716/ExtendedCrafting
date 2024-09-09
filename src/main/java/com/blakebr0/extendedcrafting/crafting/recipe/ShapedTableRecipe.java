@@ -71,6 +71,11 @@ public class ShapedTableRecipe implements ITableRecipe {
     }
 
     @Override
+    public boolean isSpecial() {
+        return true;
+    }
+
+    @Override
     public NonNullList<ItemStack> getRemainingItems(TableCraftingInput inventory) {
         var remaining = NonNullList.withSize(inventory.size(), ItemStack.EMPTY);
 

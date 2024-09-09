@@ -82,6 +82,11 @@ public class CompressorRecipe implements ICompressorRecipe {
 	}
 
 	@Override
+	public boolean isSpecial() {
+		return true;
+	}
+
+	@Override
 	public int getCount(int index) {
 		if (index < 0 || index >= this.inputs.size())
 			return -1;

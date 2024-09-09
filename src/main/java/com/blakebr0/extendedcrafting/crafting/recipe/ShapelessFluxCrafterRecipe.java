@@ -81,6 +81,11 @@ public class ShapelessFluxCrafterRecipe implements IFluxCrafterRecipe {
 	}
 
 	@Override
+	public boolean isSpecial() {
+		return true;
+	}
+
+	@Override
 	public int getPowerRequired() {
 		return this.powerRequired;
 	}
