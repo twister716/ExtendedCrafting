@@ -22,7 +22,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -31,21 +31,19 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.common.crafting.DataComponentIngredient;
 import net.neoforged.neoforge.items.IItemHandler;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 public class RecipeMakerItem extends BaseItem {
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -53,7 +51,10 @@ public class RecipeMakerItem extends BaseItem {
 	private static final char[] KEYS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-_*/".toCharArray();
 
 	public RecipeMakerItem() {
-		super(p -> p.stacksTo(1).component(ModDataComponentTypes.RECIPE_MAKER, RecipeMakerComponent.datapack()));
+		super(p -> p
+				.stacksTo(1)
+				.component(ModDataComponentTypes.RECIPE_MAKER, RecipeMakerComponent.EMPTY)
+		);
 	}
 
 	@Override
@@ -72,22 +73,22 @@ public class RecipeMakerItem extends BaseItem {
 			if (level.isClientSide()) {
 				var type = getType(stack);
 				var inventory = ((BaseInventoryTileEntity) tile).getInventory();
-				var block = tile instanceof EnderCrafterTileEntity
-						? "EnderCrafting"
+				var table = tile instanceof EnderCrafterTileEntity
+						? TableType.ENDER_CRAFTER
 						: tile instanceof FluxCrafterTileEntity
-						? "FluxCrafting"
-						: "TableCrafting";
+						? TableType.FLUX_CRAFTER
+						: TableType.TABLE;
 
 				String string;
 				if ("CraftTweaker".equals(type)) {
 					string = isShapeless(stack)
-							? makeShapelessCraftTweakerTableRecipe(inventory, block)
-							: makeShapedCraftTweakerTableRecipe(inventory, block);
+							? makeShapelessCraftTweakerTableRecipe(inventory, table)
+							: makeShapedCraftTweakerTableRecipe(inventory, table);
 
 				} else {
 					string = isShapeless(stack)
-							? makeShapelessDatapackTableRecipe(inventory, block)
-							: makeShapedDatapackTableRecipe(inventory, block);
+							? makeShapelessDatapackTableRecipe(inventory, table)
+							: makeShapedDatapackTableRecipe(inventory, table);
 
 					if ("TOO MANY ITEMS".equals(string)) {
 						player.sendSystemMessage(Localizable.of("message.extendedcrafting.max_unique_items_exceeded").args(KEYS.length).build());
@@ -100,8 +101,8 @@ public class RecipeMakerItem extends BaseItem {
 
 				player.sendSystemMessage(Localizable.of("message.extendedcrafting.copied_recipe").build());
 
-				if (ModConfigs.RECIPE_MAKER_USE_NBT.get() && "CraftTweaker".equals(type) && !ModList.get().isLoaded("crafttweaker")) {
-					player.sendSystemMessage(Localizable.of("message.extendedcrafting.nbt_requires_crafttweaker").build());
+				if (ModConfigs.RECIPE_MAKER_USE_DATA_COMPONENTS.get() && "CraftTweaker".equals(type) && !ModConfigs.isCraftTweakerInstalled()) {
+					player.sendSystemMessage(Localizable.of("message.extendedcrafting.data_components_requires_crafttweaker").build());
 				}
 			}
 
@@ -151,12 +152,12 @@ public class RecipeMakerItem extends BaseItem {
 	}
 
 	// Create a shaped CraftTweaker recipe for a Table, Flux Crafter or Ender Crafter
-	private static String makeShapedCraftTweakerTableRecipe(IItemHandler inventory, String type) {
+	private static String makeShapedCraftTweakerTableRecipe(IItemHandler inventory, TableType type) {
 		var string = new StringBuilder();
 		var uuid = UUID.randomUUID();
 
-		string.append("mods.extendedcrafting.").append(type).append(".addShaped(\"").append(uuid).append("\", ");
-		if ("TableCrafting".equals(type)) string.append("0, ");
+		string.append("<recipetype:extendedcrafting:").append(type.type).append(">.addShaped(\"").append(uuid).append("\", ");
+		if (type == TableType.TABLE) string.append("0, ");
 		string.append("<>, [").append(NEW_LINE);
 
 		int slots = getGridSlots(inventory);
@@ -183,13 +184,10 @@ public class RecipeMakerItem extends BaseItem {
 				item = "item:" + id;
 			}
 
-			string.append("<").append(item).append(">");
-
-			if (ModConfigs.RECIPE_MAKER_USE_NBT.get() && !stack.isEmpty() && stack.has(DataComponents.CUSTOM_DATA) && !item.startsWith("tag") && ModList.get().isLoaded("crafttweaker")) {
-				var nbt = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
-				var tag = CraftTweakerUtils.writeTag(nbt.copyTag());
-
-				string.append(".withTag(").append(tag).append(")");
+			if (ModConfigs.RECIPE_MAKER_USE_DATA_COMPONENTS.get() && !item.startsWith("tag") && ModConfigs.isCraftTweakerInstalled()) {
+				string.append(CraftTweakerUtils.getItemStackString(stack));
+			} else {
+				string.append("<").append(item).append(">");
 			}
 
 			if ((i + 1) % sr != 0) {
@@ -207,7 +205,7 @@ public class RecipeMakerItem extends BaseItem {
 			}
 		}
 
-		if (TableType.FLUX_CRAFTER.type.equals(type)) {
+		if (type == TableType.FLUX_CRAFTER) {
 			string.append("], 100000, ");
 			string.append(ModConfigs.FLUX_CRAFTER_POWER_RATE.get());
 			string.append(");");
@@ -219,12 +217,12 @@ public class RecipeMakerItem extends BaseItem {
 	}
 
 	// Create a shapeless CraftTweaker recipe for a Table, Flux Crafter or Ender Crafter
-	private static String makeShapelessCraftTweakerTableRecipe(IItemHandler inventory, String type) {
+	private static String makeShapelessCraftTweakerTableRecipe(IItemHandler inventory, TableType type) {
 		var string = new StringBuilder();
 		var uuid = UUID.randomUUID();
 
-		string.append("mods.extendedcrafting.").append(type).append(".addShapeless(\"").append(uuid).append("\", ");
-		if ("TableCrafting".equals(type)) string.append("0, ");
+		string.append("<recipetype:extendedcrafting:").append(type.type).append(">.addShapeless(\"").append(uuid).append("\", ");
+		if (type == TableType.TABLE) string.append("0, ");
 		string.append("<>, [").append(NEW_LINE);
 
 		List<Integer> slotsWithItems = new ArrayList<>();
@@ -251,13 +249,10 @@ public class RecipeMakerItem extends BaseItem {
 				item = "item:" + id;
 			}
 
-			string.append("<").append(item).append(">");
-
-			if (ModConfigs.RECIPE_MAKER_USE_NBT.get() && !stack.isEmpty() && stack.has(DataComponents.CUSTOM_DATA) && !item.startsWith("tag") && ModList.get().isLoaded("crafttweaker")) {
-				var nbt = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
-				var tag = CraftTweakerUtils.writeTag(nbt.copyTag());
-
-				string.append(".withTag(").append(tag).append(")");
+			if (ModConfigs.RECIPE_MAKER_USE_DATA_COMPONENTS.get() && !item.startsWith("tag") && ModConfigs.isCraftTweakerInstalled()) {
+				string.append(CraftTweakerUtils.getItemStackString(stack));
+			} else {
+				string.append("<").append(item).append(">");
 			}
 
 			if (i != lastSlot) {
@@ -265,7 +260,7 @@ public class RecipeMakerItem extends BaseItem {
 			}
 		}
 
-		if (TableType.FLUX_CRAFTER.type.equals(type)) {
+		if (type == TableType.FLUX_CRAFTER) {
 			string.append(System.lineSeparator());
 			string.append("], 100000, ");
 			string.append(ModConfigs.FLUX_CRAFTER_POWER_RATE.get());
@@ -283,12 +278,9 @@ public class RecipeMakerItem extends BaseItem {
 		var string = new StringBuilder();
 		var uuid = UUID.randomUUID();
 
-		string.append("mods.extendedcrafting.CombinationCrafting.addRecipe(\"").append(uuid).append("\", <>, 100000, [").append(NEW_LINE);
-
 		var inputId = BuiltInRegistries.ITEM.getKey(tile.getInventory().getStackInSlot(0).getItem());
-		var input = "item:" + inputId;
 
-		string.append("<").append(input).append(">, ");
+		string.append("<recipetype:extendedcrafting:combination>.addRecipe(\"").append(uuid).append("\", <>, 100000, <item:").append(inputId).append(">, [").append(NEW_LINE);
 
 		var stacks = tile.getPedestalsWithItems().values().stream().filter(s -> !s.isEmpty()).toArray(ItemStack[]::new);
 
@@ -304,14 +296,11 @@ public class RecipeMakerItem extends BaseItem {
 				item = "item:" + id;
 			}
 
-			if (ModConfigs.RECIPE_MAKER_USE_NBT.get() && !stack.isEmpty() && stack.has(DataComponents.CUSTOM_DATA) && !item.startsWith("tag") && ModList.get().isLoaded("crafttweaker")) {
-				var nbt = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
-				var tag = CraftTweakerUtils.writeTag(nbt.copyTag());
-
-				string.append(".withTag(").append(tag).append(")");
+			if (ModConfigs.RECIPE_MAKER_USE_DATA_COMPONENTS.get() && !item.startsWith("tag") && ModConfigs.isCraftTweakerInstalled()) {
+				string.append(CraftTweakerUtils.getItemStackString(stack));
+			} else {
+				string.append("<").append(item).append(">");
 			}
-
-			string.append("<").append(item).append(">");
 
 			if (i != stacks.length - 1) {
 				string.append(", ");
@@ -324,15 +313,14 @@ public class RecipeMakerItem extends BaseItem {
 	}
 
 	// Create a shaped Datapack recipe for a Table, Flux Crafter or Ender Crafter
-	private static String makeShapedDatapackTableRecipe(IItemHandler inventory, String type) {
+	private static String makeShapedDatapackTableRecipe(IItemHandler inventory, TableType type) {
 		var object = new JsonObject();
-		var tableType = TableType.fromType(type);
 
-		object.addProperty("type", tableType.shapedRecipeType);
+		object.addProperty("type", type.shapedRecipeType);
 
-		if (tableType == TableType.FLUX_CRAFTER) {
-			object.addProperty("powerRequired", 100000);
-			object.addProperty("powerRate", ModConfigs.FLUX_CRAFTER_POWER_RATE.get());
+		if (type == TableType.FLUX_CRAFTER) {
+			object.addProperty("power_required", 100000);
+			object.addProperty("power_rate", ModConfigs.FLUX_CRAFTER_POWER_RATE.get());
 		}
 
 		Map<Ingredient, Character> keysMap = new LinkedHashMap<>();
@@ -349,8 +337,13 @@ public class RecipeMakerItem extends BaseItem {
 			if (ModConfigs.RECIPE_MAKER_USE_TAGS.get() && tag != null) {
 				keysMap.put(Ingredient.of(tag), key);
 			} else {
-				if (ModConfigs.RECIPE_MAKER_USE_NBT.get()) {
-					keysMap.put(DataComponentIngredient.of(true, stack), key);
+				var components = stack.getComponentsPatch()
+						.split()
+						.added()
+						.filter(Predicate.not(DataComponentType::isTransient));
+
+				if (ModConfigs.RECIPE_MAKER_USE_DATA_COMPONENTS.get() && !components.isEmpty()) {
+					keysMap.put(DataComponentIngredient.of(false, components, stack.getItem()), key);
 				} else {
 					keysMap.put(Ingredient.of(stack), key);
 				}
@@ -401,15 +394,14 @@ public class RecipeMakerItem extends BaseItem {
 	}
 
 	// Create a shapeless Datapack recipe for a Table Flux Crafter or Ender Crafter
-	private static String makeShapelessDatapackTableRecipe(IItemHandler inventory, String type) {
+	private static String makeShapelessDatapackTableRecipe(IItemHandler inventory, TableType type) {
 		var object = new JsonObject();
-		var tableType = TableType.fromType(type);
 
-		object.addProperty("type", tableType.shapelessRecipeType);
+		object.addProperty("type", type.shapelessRecipeType);
 
-		if (tableType == TableType.FLUX_CRAFTER) {
-			object.addProperty("powerRequired", 100000);
-			object.addProperty("powerRate", ModConfigs.FLUX_CRAFTER_POWER_RATE.get());
+		if (type == TableType.FLUX_CRAFTER) {
+			object.addProperty("power_required", 100000);
+			object.addProperty("power_rate", ModConfigs.FLUX_CRAFTER_POWER_RATE.get());
 		}
 
 		var ingredients = new JsonArray();
@@ -428,8 +420,13 @@ public class RecipeMakerItem extends BaseItem {
 					ingredients.add(tag);
 				} else {
 					Ingredient ingredient;
-					if (ModConfigs.RECIPE_MAKER_USE_NBT.get()) {
-						ingredient = DataComponentIngredient.of(true, stack);
+					var components = stack.getComponentsPatch()
+							.split()
+							.added()
+							.filter(Predicate.not(DataComponentType::isTransient));
+
+					if (ModConfigs.RECIPE_MAKER_USE_DATA_COMPONENTS.get() && !components.isEmpty()) {
+						ingredient = DataComponentIngredient.of(false, components, stack.getItem());
 					} else {
 						ingredient = Ingredient.of(stack);
 					}
@@ -454,11 +451,11 @@ public class RecipeMakerItem extends BaseItem {
 		var object = new JsonObject();
 
 		object.addProperty("type", "extendedcrafting:combination");
-		object.addProperty("powerCost", 100000);
+		object.addProperty("power_cost", 100000);
 
 		var input = core.getInventory().getStackInSlot(0);
 
-		object.add("input", ItemStack.CODEC.encodeStart(JsonOps.INSTANCE, input).getOrThrow());
+		object.add("input", ItemStack.OPTIONAL_CODEC.encodeStart(JsonOps.INSTANCE, input).getOrThrow());
 
 		var ingredients = new JsonArray();
 		var stacks = core.getPedestalsWithItems().values().stream().filter(s -> !s.isEmpty()).toArray(ItemStack[]::new);
@@ -473,8 +470,13 @@ public class RecipeMakerItem extends BaseItem {
 				ingredients.add(tag);
 			} else {
 				Ingredient ingredient;
-				if (ModConfigs.RECIPE_MAKER_USE_NBT.get()) {
-					ingredient = DataComponentIngredient.of(true, stack);
+				var components = stack.getComponentsPatch()
+						.split()
+						.added()
+						.filter(Predicate.not(DataComponentType::isTransient));
+
+				if (ModConfigs.RECIPE_MAKER_USE_DATA_COMPONENTS.get() && !components.isEmpty()) {
+					ingredient = DataComponentIngredient.of(false, components, stack.getItem());
 				} else {
 					ingredient = Ingredient.of(stack);
 				}
@@ -503,8 +505,12 @@ public class RecipeMakerItem extends BaseItem {
 				tile instanceof FluxCrafterTileEntity;
 	}
 
+	private static RecipeMakerComponent getComponent(ItemStack stack) {
+		return stack.getOrDefault(ModDataComponentTypes.RECIPE_MAKER, RecipeMakerComponent.EMPTY);
+	}
+
 	private static String getType(ItemStack stack) {
-		return stack.getOrDefault(ModDataComponentTypes.RECIPE_MAKER, RecipeMakerComponent.EMPTY).type();
+		return getComponent(stack).type();
 	}
 
 	private static String getModeString(ItemStack stack) {
@@ -512,7 +518,7 @@ public class RecipeMakerItem extends BaseItem {
 	}
 
 	private static boolean isShapeless(ItemStack stack) {
-		return stack.getOrDefault(ModDataComponentTypes.RECIPE_MAKER, RecipeMakerComponent.EMPTY).shapeless();
+		return getComponent(stack).shapeless();
 	}
 
 	private static int getGridSlots(IItemHandler inventory) {
@@ -525,17 +531,9 @@ public class RecipeMakerItem extends BaseItem {
 	}
 
 	private enum TableType {
-		TABLE("TableCrafting", "extendedcrafting:shaped_table", "extendedcrafting:shapeless_table"),
-		ENDER_CRAFTER("EnderCrafting", "extendedcrafting:shaped_ender_crafter", "extendedcrafting:shapeless_ender_crafter"),
-		FLUX_CRAFTER("FluxCrafting","extendedcrafting:shaped_flux_crafter", "extendedcrafting:shapeless_flux_crafter");
-
-		private static final Map<String, TableType> LOOKUP = new HashMap<>();
-
-		static {
-			for (var value : values()) {
-				LOOKUP.put(value.type, value);
-			}
-		}
+		TABLE("table", "extendedcrafting:shaped_table", "extendedcrafting:shapeless_table"),
+		ENDER_CRAFTER("ender_crafting", "extendedcrafting:shaped_ender_crafter", "extendedcrafting:shapeless_ender_crafter"),
+		FLUX_CRAFTER("flux_crafting","extendedcrafting:shaped_flux_crafter", "extendedcrafting:shapeless_flux_crafter");
 
 		public final String type;
 		public final String shapedRecipeType;
@@ -545,10 +543,6 @@ public class RecipeMakerItem extends BaseItem {
 			this.type = type;
 			this.shapedRecipeType = shapedRecipeType;
 			this.shapelessRecipeType = shapelessRecipeType;
-		}
-
-		public static TableType fromType(String type) {
-			return LOOKUP.get(type);
 		}
 	}
 }

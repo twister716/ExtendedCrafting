@@ -115,7 +115,7 @@
 
   "message.extendedcrafting.changed_mode": "模式改变为%s。",
   "message.extendedcrafting.copied_recipe": "复制配方到剪贴板。",
-  "message.extendedcrafting.nbt_requires_crafttweaker": "警告：需安装CraftTweaker方可复制NBT。",
+  "message.extendedcrafting.data_components_requires_crafttweaker": "警告：需安装CraftTweaker方可复制Data Components。",
   "message.extendedcrafting.max_unique_items_exceeded": "在成型的数据包配方中，你最多只能有%s个唯一项目。",
 
   "jei.category.extendedcrafting.combination": "组合合成",

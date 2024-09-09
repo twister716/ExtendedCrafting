@@ -96,7 +96,7 @@
 
   "message.extendedcrafting.changed_mode": "Режим изменён на %s.",
   "message.extendedcrafting.copied_recipe": "Рецепт скопирован в буфер обмена.",
-  "message.extendedcrafting.nbt_requires_crafttweaker": "CraftTweaker требуется для копирования NBT.",
+  "message.extendedcrafting.data_components_requires_crafttweaker": "CraftTweaker требуется для копирования Data Components.",
   "message.extendedcrafting.max_unique_items_exceeded": "Вы можете иметь максимум (%s) однотипных предметов в сформированном рецепте из дата-пака.",
 
   "jei.category.extendedcrafting.combination": "Комбинированное создание",

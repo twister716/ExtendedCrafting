@@ -1,5 +1,6 @@
 package com.blakebr0.extendedcrafting.config;
 
+import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 public final class ModConfigs {
@@ -61,7 +62,7 @@ public final class ModConfigs {
 
 	public static final ModConfigSpec.BooleanValue ENABLE_RECIPE_MAKER;
 	public static final ModConfigSpec.BooleanValue RECIPE_MAKER_USE_TAGS;
-	public static final ModConfigSpec.BooleanValue RECIPE_MAKER_USE_NBT;
+	public static final ModConfigSpec.BooleanValue RECIPE_MAKER_USE_DATA_COMPONENTS;
 
 	// Common
 	static {
@@ -188,11 +189,15 @@ public final class ModConfigs {
 		RECIPE_MAKER_USE_TAGS = common
 				.comment("Should the recipe maker try to use tags when possible?")
 				.define("useTags", false);
-		RECIPE_MAKER_USE_NBT = common
-				.comment("Should the recipe maker add NBT tags when possible?")
-				.define("useNBT", true);
+		RECIPE_MAKER_USE_DATA_COMPONENTS = common
+				.comment("Should the recipe maker add data components when possible?")
+				.define("useDataComponents", true);
 		common.pop();
 
 		COMMON = common.build();
+	}
+
+	public static boolean isCraftTweakerInstalled() {
+		return ModList.get().isLoaded("crafttweaker");
 	}
 }
