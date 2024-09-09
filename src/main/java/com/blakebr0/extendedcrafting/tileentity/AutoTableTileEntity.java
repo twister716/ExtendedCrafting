@@ -375,7 +375,7 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
 
         @Override
         public int getProgressRequired() {
-            return 20;
+            return ModConfigs.AUTO_TABLE_TIME_REQUIRED.get();
         }
 
         @Override
@@ -434,7 +434,7 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
 
         @Override
         public int getProgressRequired() {
-            return 40;
+            return ModConfigs.AUTO_TABLE_TIME_REQUIRED.get() * 2;
         }
 
         @Override
@@ -493,7 +493,7 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
 
         @Override
         public int getProgressRequired() {
-            return 60;
+            return ModConfigs.AUTO_TABLE_TIME_REQUIRED.get() * 3;
         }
 
         @Override
@@ -552,7 +552,7 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
 
         @Override
         public int getProgressRequired() {
-            return 80;
+            return ModConfigs.AUTO_TABLE_TIME_REQUIRED.get() * 4;
         }
 
         @Override

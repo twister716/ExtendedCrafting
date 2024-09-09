@@ -31,6 +31,7 @@ public final class ModConfigs {
 	public static final ModConfigSpec.BooleanValue ENABLE_TABLES;
 	public static final ModConfigSpec.BooleanValue ENABLE_AUTO_TABLES;
 	public static final ModConfigSpec.BooleanValue TABLE_USE_VANILLA_RECIPES;
+	public static final ModConfigSpec.IntValue AUTO_TABLE_TIME_REQUIRED;
 	public static final ModConfigSpec.IntValue AUTO_TABLE_POWER_CAPACITY;
 	public static final ModConfigSpec.IntValue AUTO_TABLE_POWER_RATE;
 	public static final ModConfigSpec.IntValue AUTO_TABLE_INSERT_POWER_RATE;
@@ -96,6 +97,12 @@ public final class ModConfigs {
 		TABLE_USE_VANILLA_RECIPES = common
 				.comment("Should the Basic Crafting Table inherit vanilla crafting recipes?")
 				.define("useVanillaRecipes", true);
+		AUTO_TABLE_TIME_REQUIRED = common
+				.comment("""
+						How long a single auto crafting operation should take (in ticks) by default for the base tier.
+						Higher tiers multiply this time with the formula <value> x tier.
+						""")
+				.defineInRange("autoTableTimeRequired", 20, 0, Integer.MAX_VALUE);
 		AUTO_TABLE_POWER_CAPACITY = common
 				.comment("How much FE the Auto Crafting Tables should hold. Higher tiers use double the previous tier.")
 				.defineInRange("autoTablePowerCapacity", 500000, 0, Integer.MAX_VALUE);
