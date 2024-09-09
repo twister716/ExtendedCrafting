@@ -2,6 +2,7 @@ package com.blakebr0.extendedcrafting.singularity;
 
 import com.blakebr0.cucumber.util.Localizable;
 import com.blakebr0.extendedcrafting.config.ModConfigs;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
@@ -9,6 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.FastColor;
 import net.minecraft.world.item.crafting.Ingredient;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 
@@ -23,10 +25,11 @@ public class Singularity {
     private final String tag;
     private final int ingredientCount;
     private final boolean inUltimateSingularity;
+    @Nullable
     private Ingredient ingredient;
     private boolean enabled = true;
 
-    public Singularity(ResourceLocation id, String name, int[] colors, Ingredient ingredient, int ingredientCount, boolean inUltimateSingularity) {
+    public Singularity(ResourceLocation id, String name, int[] colors, @Nullable Ingredient ingredient, int ingredientCount, boolean inUltimateSingularity) {
         this.id = id;
         this.name = name;
         this.colors = Arrays.stream(colors).map(c -> FastColor.ARGB32.color(255, c)).toArray();
@@ -36,7 +39,7 @@ public class Singularity {
         this.inUltimateSingularity = inUltimateSingularity;
     }
 
-    public Singularity(ResourceLocation id, String name, int[] colors, Ingredient ingredient) {
+    public Singularity(ResourceLocation id, String name, int[] colors, @Nullable Ingredient ingredient) {
         this(id, name, colors, ingredient, -1, true);
     }
 
@@ -44,7 +47,7 @@ public class Singularity {
         this.id = id;
         this.name = name;
         this.colors = Arrays.stream(colors).map(c -> FastColor.ARGB32.color(255, c)).toArray();
-        this.ingredient = Ingredient.EMPTY;
+        this.ingredient = null;
         this.tag = tag;
         this.ingredientCount = ingredientCount;
         this.inUltimateSingularity = inUltimateSingularity;
@@ -75,12 +78,16 @@ public class Singularity {
     }
 
     public Ingredient getIngredient() {
-        if (this.tag != null && this.ingredient == Ingredient.EMPTY) {
+        if (this.tag != null && this.ingredient == null) {
             var tag = ItemTags.create(ResourceLocation.parse(this.tag));
-            this.ingredient = Ingredient.of(tag);
+            if (BuiltInRegistries.ITEM.getTag(tag).isPresent()) {
+                this.ingredient = Ingredient.of(tag);
+            } else {
+                this.ingredient = Ingredient.EMPTY;
+            }
         }
 
-        return this.ingredient;
+        return this.ingredient != null ? this.ingredient : Ingredient.EMPTY;
     }
 
     public int getIngredientCount() {
@@ -116,7 +123,7 @@ public class Singularity {
         if (this.tag != null) {
             buffer.writeUtf(this.tag);
         } else {
-            Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, this.ingredient);
+            Ingredient.CONTENTS_STREAM_CODEC.encode(buffer, this.ingredient != null ? this.ingredient : Ingredient.EMPTY);
         }
 
         buffer.writeVarInt(this.getIngredientCount());
