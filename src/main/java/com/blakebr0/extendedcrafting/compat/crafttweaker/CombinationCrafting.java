@@ -29,12 +29,12 @@ public final class CombinationCrafting implements IRecipeManager<ICombinationRec
 	}
 
 	@ZenCodeType.Method
-	public void addRecipe(String name, IItemStack output, int cost, IIngredient input, IIngredient[] inputs) {
-		addRecipe(name, output, cost, input, inputs, ModConfigs.CRAFTING_CORE_POWER_RATE.get());
+	public void addRecipe(String name, IItemStack output, IIngredient input, IIngredient[] inputs, int cost) {
+		addRecipe(name, output, input, inputs, cost, ModConfigs.CRAFTING_CORE_POWER_RATE.get());
 	}
 
 	@ZenCodeType.Method
-	public void addRecipe(String name, IItemStack output, int cost, IIngredient input, IIngredient[] inputs, int perTick) {
+	public void addRecipe(String name, IItemStack output, IIngredient input, IIngredient[] inputs, int cost, int perTick) {
 		var id = CraftTweakerConstants.rl(this.fixRecipeName(name));
 		var recipe = new CombinationRecipe(input.asVanillaIngredient(), toIngredientsList(inputs), output.getInternal(), cost, perTick);
 
