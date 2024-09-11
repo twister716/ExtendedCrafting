@@ -31,6 +31,6 @@ license="MIT"
     [[dependencies.extendedcrafting]]
         modId="cucumber"
         mandatory=true
-        versionRange="[7.0.4,)"
+        versionRange="[${cucumber_version},)"
         ordering="NONE"
         side="BOTH"
