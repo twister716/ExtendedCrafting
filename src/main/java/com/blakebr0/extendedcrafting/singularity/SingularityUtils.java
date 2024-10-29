@@ -50,8 +50,8 @@ public final class SingularityUtils {
 
         var colors = new JsonArray();
 
-        colors.add(Integer.toString(singularity.getOverlayColor(), 16));
-        colors.add(Integer.toString(singularity.getUnderlayColor(), 16));
+        colors.add(Integer.toHexString(singularity.getOverlayColor() & 0x00FFFFFF));
+        colors.add(Integer.toHexString(singularity.getUnderlayColor() & 0x00FFFFFF));
 
         json.add("colors", colors);
 
