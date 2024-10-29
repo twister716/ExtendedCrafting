@@ -18,16 +18,16 @@ public final class ModSingularities {
     public static final Singularity DIAMOND = new Singularity(ExtendedCrafting.resource("diamond"), "singularity.extendedcrafting.diamond", new int[] { 0xA6FCE9, 0x1AACA8 }, Ingredient.of(Items.DIAMOND));
     public static final Singularity EMERALD = new Singularity(ExtendedCrafting.resource("emerald"), "singularity.extendedcrafting.emerald", new int[] { 0x7DF8AC, 0x008E1A }, Ingredient.of(Items.EMERALD));
 
-    public static final Singularity ALUMINUM = new Singularity(ExtendedCrafting.resource("aluminum"), "singularity.extendedcrafting.aluminum", new int[] { 0xCACCDA, 0x9A9CA6 }, "forge:ingots/aluminum");
-    public static final Singularity TIN = new Singularity(ExtendedCrafting.resource("tin"), "singularity.extendedcrafting.tin", new int[] { 0xA0BEBD, 0x527889 }, "forge:ingots/tin");
-    public static final Singularity BRONZE = new Singularity(ExtendedCrafting.resource("bronze"), "singularity.extendedcrafting.bronze", new int[] { 0xD99F43, 0xBB6B3B }, "forge:ingots/bronze");
-    public static final Singularity SILVER = new Singularity(ExtendedCrafting.resource("silver"), "singularity.extendedcrafting.silver", new int[] { 0xC0CDD2, 0x5F6E7C }, "forge:ingots/silver");
-    public static final Singularity LEAD = new Singularity(ExtendedCrafting.resource("lead"), "singularity.extendedcrafting.lead", new int[] { 0x6C7D92, 0x323562 }, "forge:ingots/lead");
-    public static final Singularity STEEL = new Singularity(ExtendedCrafting.resource("steel"), "singularity.extendedcrafting.steel", new int[] { 0x565656, 0x232323 }, "forge:ingots/steel");
-    public static final Singularity NICKEL = new Singularity(ExtendedCrafting.resource("nickel"), "singularity.extendedcrafting.nickel", new int[] { 0xE1D798, 0xB1976C }, "forge:ingots/nickel");
-    public static final Singularity ELECTRUM = new Singularity(ExtendedCrafting.resource("electrum"), "singularity.extendedcrafting.electrum", new int[] { 0xF5F18E, 0x9E8D3E }, "forge:ingots/electrum");
-    public static final Singularity INVAR = new Singularity(ExtendedCrafting.resource("invar"), "singularity.extendedcrafting.invar", new int[] { 0xBCC5BB, 0x5D7877 }, "forge:ingots/invar");
-    public static final Singularity PLATINUM = new Singularity(ExtendedCrafting.resource("platinum"), "singularity.extendedcrafting.platinum", new int[] { 0x6FEAEF, 0x57B8BC }, "forge:ingots/platinum");
+    public static final Singularity ALUMINUM = new Singularity(ExtendedCrafting.resource("aluminum"), "singularity.extendedcrafting.aluminum", new int[] { 0xCACCDA, 0x9A9CA6 }, "c:ingots/aluminum");
+    public static final Singularity TIN = new Singularity(ExtendedCrafting.resource("tin"), "singularity.extendedcrafting.tin", new int[] { 0xA0BEBD, 0x527889 }, "c:ingots/tin");
+    public static final Singularity BRONZE = new Singularity(ExtendedCrafting.resource("bronze"), "singularity.extendedcrafting.bronze", new int[] { 0xD99F43, 0xBB6B3B }, "c:ingots/bronze");
+    public static final Singularity SILVER = new Singularity(ExtendedCrafting.resource("silver"), "singularity.extendedcrafting.silver", new int[] { 0xC0CDD2, 0x5F6E7C }, "c:ingots/silver");
+    public static final Singularity LEAD = new Singularity(ExtendedCrafting.resource("lead"), "singularity.extendedcrafting.lead", new int[] { 0x6C7D92, 0x323562 }, "c:ingots/lead");
+    public static final Singularity STEEL = new Singularity(ExtendedCrafting.resource("steel"), "singularity.extendedcrafting.steel", new int[] { 0x565656, 0x232323 }, "c:ingots/steel");
+    public static final Singularity NICKEL = new Singularity(ExtendedCrafting.resource("nickel"), "singularity.extendedcrafting.nickel", new int[] { 0xE1D798, 0xB1976C }, "c:ingots/nickel");
+    public static final Singularity ELECTRUM = new Singularity(ExtendedCrafting.resource("electrum"), "singularity.extendedcrafting.electrum", new int[] { 0xF5F18E, 0x9E8D3E }, "c:ingots/electrum");
+    public static final Singularity INVAR = new Singularity(ExtendedCrafting.resource("invar"), "singularity.extendedcrafting.invar", new int[] { 0xBCC5BB, 0x5D7877 }, "c:ingots/invar");
+    public static final Singularity PLATINUM = new Singularity(ExtendedCrafting.resource("platinum"), "singularity.extendedcrafting.platinum", new int[] { 0x6FEAEF, 0x57B8BC }, "c:ingots/platinum");
 
     public static List<Singularity> getDefaults() {
         return List.of(
