@@ -7,6 +7,7 @@ import com.blakebr0.cucumber.inventory.OnContentsChangedFunction;
 import com.blakebr0.cucumber.tileentity.BaseInventoryTileEntity;
 import com.blakebr0.cucumber.util.Localizable;
 import com.blakebr0.extendedcrafting.api.TableCraftingInput;
+import com.blakebr0.extendedcrafting.api.crafting.ITableRecipe;
 import com.blakebr0.extendedcrafting.config.ModConfigs;
 import com.blakebr0.extendedcrafting.container.AdvancedAutoTableContainer;
 import com.blakebr0.extendedcrafting.container.BasicAutoTableContainer;
@@ -15,6 +16,7 @@ import com.blakebr0.extendedcrafting.container.UltimateAutoTableContainer;
 import com.blakebr0.extendedcrafting.crafting.TableRecipeStorage;
 import com.blakebr0.extendedcrafting.init.ModRecipeTypes;
 import com.blakebr0.extendedcrafting.init.ModTileEntities;
+import com.mojang.datafixers.util.Either;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -34,11 +36,13 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.IItemHandler;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
 public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implements MenuProvider {
-    private Recipe<CraftingInput> recipe;
+    @Nullable
+    private Either<Recipe<CraftingInput>, ITableRecipe> recipe;
     private int progress;
     private boolean running = true;
     private boolean isGridChanged = true;
@@ -90,7 +94,7 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
             if (recipe != null && tile.matchesSelectedRecipe(recipe)) {
                 var recipeInventory = tile.getRecipeInventory();
                 var inventory = tile.getInventory();
-                var result = recipe.assemble(recipeInventory, level.registryAccess());
+                var result = recipe.map(v -> v.assemble(recipeInventory, level.registryAccess()), t -> t.assemble(recipeInventory, level.registryAccess()));
                 int outputSlot = inventory.getSlots() - 1;
                 var output = inventory.getStackInSlot(outputSlot);
                 int powerRate = ModConfigs.AUTO_TABLE_POWER_RATE.get();
@@ -100,7 +104,7 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
                     energy.extractEnergy(powerRate, false);
 
                     if (tile.progress >= tile.getProgressRequired()) {
-                        var remaining = recipe.getRemainingItems(recipeInventory);
+                        var remaining = recipe.map(v -> v.getRemainingItems(recipeInventory), t -> t.getRemainingItems(recipeInventory));
 
                         for (int k = 0; k < recipeInventory.height(); k++) {
                             for (int l = 0; l < recipeInventory.width(); l++) {
@@ -217,24 +221,35 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
         return TableCraftingInput.of(size, size, inventory.getStacks().subList(0, inventory.getSlots() - 1), this.getTier());
     }
 
-    public Recipe<CraftingInput> getActiveRecipe() {
+    public Either<Recipe<CraftingInput>, ITableRecipe> getActiveRecipe() {
         if (this.level == null)
             return null;
 
         var inventory = this.getRecipeInventory();
 
-        if (this.isGridChanged && (this.recipe == null || !this.recipe.matches(inventory, this.level))) {
-            //noinspection unchecked
-            this.recipe = (Recipe<CraftingInput>) (Object) this.level.getRecipeManager()
+        if (this.isGridChanged && (this.recipe == null || !this.recipe.map(v -> v.matches(inventory, this.level), t -> t.matches(inventory, this.level)))) {
+            var recipe = this.level.getRecipeManager()
                     .getRecipeFor(ModRecipeTypes.TABLE.get(), inventory, this.level)
                     .map(RecipeHolder::value)
                     .orElse(null);
 
-            if (this.recipe == null && ModConfigs.TABLE_USE_VANILLA_RECIPES.get() && this instanceof Basic) {
-                this.recipe = this.level.getRecipeManager()
+            if (recipe != null) {
+                this.recipe = Either.right(recipe);
+            } else {
+                this.recipe = null;
+            }
+
+            if (recipe == null && ModConfigs.TABLE_USE_VANILLA_RECIPES.get() && this instanceof Basic) {
+                var vanillaRecipe = this.level.getRecipeManager()
                         .getRecipeFor(RecipeType.CRAFTING, inventory, this.level)
                         .map(RecipeHolder::value)
                         .orElse(null);
+
+                if (vanillaRecipe != null) {
+                    this.recipe = Either.left(vanillaRecipe);
+                } else {
+                    this.recipe = null;
+                }
             }
 
             this.isGridChanged = false;
@@ -243,7 +258,7 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
         return this.recipe;
     }
 
-    public boolean matchesSelectedRecipe(Recipe<CraftingInput> recipe) {
+    public boolean matchesSelectedRecipe(Either<Recipe<CraftingInput>, ITableRecipe> recipe) {
         if (this.level == null)
             return false;
 
@@ -251,9 +266,9 @@ public abstract class AutoTableTileEntity extends BaseInventoryTileEntity implem
         if (selectedRecipe == null)
             return true;
 
-        var size = (int) Math.sqrt(this.getInventory().getSlots() - 1);
+        var inventory = this.getRecipeInventory();
 
-        return recipe.matches(selectedRecipe.toCraftingInput(size, size), this.level);
+        return recipe.map(v -> v.matches(inventory, this.level), t -> t.matches(inventory, this.level));
     }
 
     public abstract int getProgressRequired();
